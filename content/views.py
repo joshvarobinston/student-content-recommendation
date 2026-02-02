@@ -49,3 +49,26 @@ class InterestBasedRecommendationAPIView(APIView):
 
         serializer = ContentItemSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+
+from content.services.recommendation import generate_recommendations_for_user
+
+class RecommendationAPIView(APIView):
+    """
+    Returns personalized content recommendations for the logged-in user
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        ranked_items = generate_recommendations_for_user(user)
+
+        # extract ContentItem objects only
+        contents = [item["content"] for item in ranked_items]
+
+        serializer = ContentItemSerializer(contents, many=True)
+        return Response(serializer.data)
+
