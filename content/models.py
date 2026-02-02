@@ -1,12 +1,13 @@
 # student_Reco/content/models.py
 
 from django.db import models
+from interests.models import InterestDomain
 
 
 class ContentItem(models.Model):
     """
-    Core table that stores all content types
-    Used by recommendation engine and ML vectorization
+    Core table that stores all recommendable content.
+    Used by recommendation engine and ML vectorization (TF-IDF).
     """
 
     CONTENT_TYPES = (
@@ -16,16 +17,28 @@ class ContentItem(models.Model):
         ('book', 'Book / Research Paper'),
     )
 
+    # Core ML text fields
     title = models.CharField(max_length=255)
     description = models.TextField()
+
+    # Content classification
     content_type = models.CharField(max_length=20, choices=CONTENT_TYPES)
 
+    # Interest-based filtering (critical for recommendations)
+    interest_domain = models.ForeignKey(
+        InterestDomain,
+        on_delete=models.CASCADE,
+        related_name='content_items'
+    )
+
+    # Source & metadata
     source_name = models.CharField(max_length=100)
     source_url = models.URLField(unique=True)
 
     thumbnail_url = models.URLField(blank=True)
     author = models.CharField(max_length=255, blank=True)
 
+    # Recency & video-specific info
     published_date = models.DateTimeField()
     duration = models.IntegerField(
         null=True,
@@ -41,8 +54,8 @@ class ContentItem(models.Model):
 
 class ContentTag(models.Model):
     """
-    Stores topic-level tags such as AI, ML, Health, Finance
-    Helps ML and filtering
+    Stores topic-level tags such as AI, ML, Health, Finance.
+    Used for ML vector enrichment and filtering.
     """
     name = models.CharField(max_length=50, unique=True)
 
@@ -52,11 +65,20 @@ class ContentTag(models.Model):
 
 class ContentItemTag(models.Model):
     """
-    Many-to-many mapping between ContentItem and ContentTag
+    Many-to-many mapping between ContentItem and ContentTag.
     """
 
-    content_item = models.ForeignKey(ContentItem, on_delete=models.CASCADE)
-    tag = models.ForeignKey(ContentTag, on_delete=models.CASCADE)
+    content_item = models.ForeignKey(
+        ContentItem,
+        on_delete=models.CASCADE,
+        related_name='content_tags'
+    )
+
+    tag = models.ForeignKey(
+        ContentTag,
+        on_delete=models.CASCADE,
+        related_name='tagged_contents'
+    )
 
     class Meta:
         unique_together = ('content_item', 'tag')
