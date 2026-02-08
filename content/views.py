@@ -52,11 +52,25 @@ class InterestBasedRecommendationAPIView(APIView):
     
 
 
+from content.services.external.youtube_fetch import fetch_youtube_videos
+from content.services.external.news_fetch import fetch_news_articles
+from content.services.external.google_books_fetch import fetch_google_books
+from content.services.external.ingestion import ingest_external_videos,ingest_external_news, ingest_external_books
+from content.services.domain_classifier import detect_interest_domain
+from interests.models import UserInterest
+
+
 from content.services.recommendation import generate_recommendations_for_user
 
 class RecommendationAPIView(APIView):
     """
-    Returns personalized content recommendations for the logged-in user
+    Returns personalized content recommendations for the logged-in user.
+
+    Flow:
+    1. Fetch fresh external content based on user interests
+    2. Store new content (avoid duplicates)
+    3. Run ML-based recommendation engine
+    4. Return ranked content
     """
 
     permission_classes = [IsAuthenticated]
@@ -64,11 +78,44 @@ class RecommendationAPIView(APIView):
     def get(self, request):
         user = request.user
 
+        # 🔹 STEP 1: Auto-refresh external content using user interests
+        user_interests = UserInterest.objects.filter(user=user)
+
+        for user_interest in user_interests:
+            domain_name = user_interest.interest.name
+
+            videos = fetch_youtube_videos(
+                query=domain_name,
+                max_results=3  # small number to avoid overload
+            )
+
+            ingest_external_videos(
+                videos,
+                interest_domain_name=domain_name
+            )
+            news_items = fetch_news_articles(
+                query=domain_name,
+                max_results=3
+            )
+            ingest_external_news(
+                news_items,
+                interest_domain_name=domain_name
+            )
+            books = fetch_google_books(
+                query=domain_name,
+                max_results=3
+            )
+            ingest_external_books(
+                books,
+                interest_domain_name=domain_name
+            )
+
+        # 🔹 STEP 2: Run ML recommendation engine
         ranked_items = generate_recommendations_for_user(user)
 
-        # extract ContentItem objects only
+        # 🔹 STEP 3: Extract ContentItem objects
         contents = [item["content"] for item in ranked_items]
 
         serializer = ContentItemSerializer(contents, many=True)
         return Response(serializer.data)
-
+    

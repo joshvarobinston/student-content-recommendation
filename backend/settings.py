@@ -156,3 +156,11 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
+# YouTube API Key
+YOUTUBE_API_KEY = os.getenv('YOUTUBE_API_KEY')
+
+# News API Key
+NEWS_API_KEY = os.getenv('NEWS_API_KEY')
+
+# Google Books API Key
+GOOGLE_BOOKS_API_KEY = os.getenv("GOOGLE_BOOKS_API_KEY")
