@@ -1,3 +1,5 @@
+# student_reco/backend/settings.py
+
 """
 Django settings for backend project.
 

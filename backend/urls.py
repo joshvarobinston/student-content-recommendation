@@ -1,3 +1,4 @@
+# student_reco/backend/urls.py
 """
 URL configuration for backend project.
 
@@ -24,6 +25,7 @@ urlpatterns = [
     path('api/interests/', include('interests.urls')), 
     path('api/content/', include('content.urls')),
     path('api/engagement/', include('engagement.urls')),
+    path("api/account/", include("accounts.urls")),
 
  
 ]

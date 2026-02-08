@@ -67,7 +67,7 @@ class RecommendationAPIView(APIView):
     Returns personalized content recommendations for the logged-in user.
 
     Flow:
-    1. Fetch fresh external content based on user interests
+    1. Fetch limited external content (safe)
     2. Store new content (avoid duplicates)
     3. Run ML-based recommendation engine
     4. Return ranked content
@@ -78,44 +78,40 @@ class RecommendationAPIView(APIView):
     def get(self, request):
         user = request.user
 
-        # 🔹 STEP 1: Auto-refresh external content using user interests
-        user_interests = UserInterest.objects.filter(user=user)
+        # 🔹 STEP 1: Pick ONE primary interest (rate-limit safe)
+        user_interest = UserInterest.objects.filter(user=user).first()
 
-        for user_interest in user_interests:
+        if user_interest:
             domain_name = user_interest.interest.name
 
+            # --- YouTube ---
             videos = fetch_youtube_videos(
                 query=domain_name,
-                max_results=3  # small number to avoid overload
+                max_results=3
             )
+            ingest_external_videos(videos, domain_name)
 
-            ingest_external_videos(
-                videos,
-                interest_domain_name=domain_name
-            )
+            # --- News ---
             news_items = fetch_news_articles(
                 query=domain_name,
                 max_results=3
             )
-            ingest_external_news(
-                news_items,
-                interest_domain_name=domain_name
-            )
+            ingest_external_news(news_items, domain_name)
+
+            # --- Books (rate-limited API) ---
             books = fetch_google_books(
                 query=domain_name,
-                max_results=3
+                max_results=2   # 🔥 reduced
             )
-            ingest_external_books(
-                books,
-                interest_domain_name=domain_name
-            )
+            ingest_external_books(books, domain_name)
 
-        # 🔹 STEP 2: Run ML recommendation engine
+        # 🔹 STEP 2: ML ranking
         ranked_items = generate_recommendations_for_user(user)
 
-        # 🔹 STEP 3: Extract ContentItem objects
+        # 🔹 STEP 3: Extract content
         contents = [item["content"] for item in ranked_items]
 
         serializer = ContentItemSerializer(contents, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     

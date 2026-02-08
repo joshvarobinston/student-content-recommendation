@@ -11,5 +11,6 @@ urlpatterns = [
     path('personalized-recommendations/', RecommendationAPIView.as_view(), name='recommendations'),
     path('search/', ExternalSearchAPIView.as_view(), name='external-search'),
     
+    
 
 ]
