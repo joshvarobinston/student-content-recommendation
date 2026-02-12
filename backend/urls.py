@@ -26,6 +26,8 @@ urlpatterns = [
     path('api/content/', include('content.urls')),
     path('api/engagement/', include('engagement.urls')),
     path("api/account/", include("accounts.urls")),
+    path("api/settings/", include("settings_app.urls")),
+    path("api/library/", include("library.urls")),
 
  
 ]

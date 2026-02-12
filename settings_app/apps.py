@@ -1,3 +1,4 @@
+# student_reco/settings_app/apps.py
 from django.apps import AppConfig
 
 

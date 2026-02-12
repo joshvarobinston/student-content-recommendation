@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'engagement',
     'settings_app',
     'authentication',
+    'library',
 ]
 
 
