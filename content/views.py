@@ -52,43 +52,39 @@ class InterestBasedRecommendationAPIView(APIView):
     
 
 
+from django.utils import timezone
+from datetime import timedelta
+
+from interests.models import UserInterest
+from content.serializers import ContentItemSerializer
+from content.pagination import StandardResultsPagination
+from content.services.recommendation import generate_recommendations_for_user
+
 from content.services.external.youtube_fetch import fetch_youtube_videos
 from content.services.external.news_fetch import fetch_news_articles
 from content.services.external.google_books_fetch import fetch_google_books
-from content.services.external.ingestion import ingest_external_videos,ingest_external_news, ingest_external_books
-from content.services.domain_classifier import detect_interest_domain
-from interests.models import UserInterest
-from content.serializers import ContentItemSerializer
-from django.utils import timezone
-from datetime import timedelta
-from content.services.recommendation import generate_recommendations_for_user
+from content.services.external.ingestion import (
+    ingest_external_videos,
+    ingest_external_news,
+    ingest_external_books,
+)
+
 
 class RecommendationAPIView(APIView):
-    """
-    Returns personalized content recommendations for the logged-in user.
-
-    Flow:
-    1. Fetch limited external content (safe)
-    2. Store new content (avoid duplicates)
-    3. Run ML-based recommendation engine
-    4. Apply filters (type, date)
-    5. Apply sorting
-    """
-
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user
 
         # =============================
-        # 🔹 FILTER PARAMETERS
+        # 🔹 QUERY PARAMETERS
         # =============================
         content_type = request.query_params.get("type")
         sort_by = request.query_params.get("sort", "relevant")
         date_filter = request.query_params.get("date")
 
         # =============================
-        # 🔹 STEP 1: SAFE EXTERNAL FETCH
+        # 🔹 SAFE EXTERNAL FETCH (Rate-Limited Safe)
         # =============================
         user_interest = UserInterest.objects.filter(user=user).first()
 
@@ -96,33 +92,31 @@ class RecommendationAPIView(APIView):
             domain_name = user_interest.interest.name
 
             try:
-                videos = fetch_youtube_videos(query=domain_name, max_results=3)
+                videos = fetch_youtube_videos(domain_name, max_results=3)
                 ingest_external_videos(videos, domain_name)
             except Exception:
                 pass
 
             try:
-                news_items = fetch_news_articles(query=domain_name, max_results=3)
-                ingest_external_news(news_items, domain_name)
+                news = fetch_news_articles(domain_name, max_results=3)
+                ingest_external_news(news, domain_name)
             except Exception:
                 pass
 
             try:
-                books = fetch_google_books(query=domain_name, max_results=2)
+                books = fetch_google_books(domain_name, max_results=2)
                 ingest_external_books(books, domain_name)
             except Exception:
                 pass
 
         # =============================
-        # 🔹 STEP 2: ML RANKING
+        # 🔹 ML RANKING
         # =============================
         ranked_items = generate_recommendations_for_user(user)
-
-        # Extract only ContentItem objects
         contents = [item["content"] for item in ranked_items]
 
         # =============================
-        # 🔹 STEP 3: TYPE FILTER
+        # 🔹 TYPE FILTER
         # =============================
         if content_type:
             contents = [
@@ -131,7 +125,7 @@ class RecommendationAPIView(APIView):
             ]
 
         # =============================
-        # 🔹 STEP 4: DATE FILTER
+        # 🔹 DATE FILTER
         # =============================
         if date_filter:
             now_time = timezone.now()
@@ -152,9 +146,8 @@ class RecommendationAPIView(APIView):
                 ]
 
         # =============================
-        # 🔹 STEP 5: SORTING
+        # 🔹 SORTING
         # =============================
-
         if sort_by == "newest":
             contents.sort(
                 key=lambda x: x.published_date or timezone.now(),
@@ -167,14 +160,14 @@ class RecommendationAPIView(APIView):
                 reverse=True
             )
 
-        # "relevant" → already ML ranked
-        # no need to sort
+        # "relevant" = already ML sorted
 
         # =============================
-        # 🔹 STEP 6: RETURN RESPONSE
+        # 🔹 PAGINATION
         # =============================
-        serializer = ContentItemSerializer(contents, many=True)
+        paginator = StandardResultsPagination()
+        page = paginator.paginate_queryset(contents, request)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
+        serializer = ContentItemSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
     
