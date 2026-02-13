@@ -49,9 +49,12 @@ from .models import UserLike
 from .serializers import UserLikeCreateSerializer
 
 
-class UserLikeCreateAPIView(APIView):
+class UserLikeToggleAPIView(APIView):
     """
-    Records a LIKE event when a user likes content
+    Toggle LIKE on a content item.
+    
+    If already liked → remove like.
+    If not liked → create like.
     """
 
     permission_classes = [IsAuthenticated]
@@ -70,63 +73,84 @@ class UserLikeCreateAPIView(APIView):
                     status=status.HTTP_404_NOT_FOUND
                 )
 
-            # Prevent duplicate likes
-            UserLike.objects.get_or_create(
+            like_obj = UserLike.objects.filter(
                 user=request.user,
                 content_item=content
-            )
+            ).first()
 
-            return Response(
-                {"message": "Like recorded"},
-                status=status.HTTP_201_CREATED
-            )
+            # 🔁 Toggle logic
+            if like_obj:
+                like_obj.delete()
+                return Response(
+                    {"message": "Like removed"},
+                    status=status.HTTP_200_OK
+                )
+            else:
+                UserLike.objects.create(
+                    user=request.user,
+                    content_item=content
+                )
+                return Response(
+                    {"message": "Content liked"},
+                    status=status.HTTP_201_CREATED
+                )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-from .models import UserSave
-from .serializers import UserSaveCreateSerializer as UserSaveSerializer
+# student_Reco/engagement/views.py
 
-class UserSaveCreateAPIView(APIView):
+from .models import UserSave
+
+
+class UserSaveToggleAPIView(APIView):
     """
-    SAVE (bookmark) a content item
-    Strongest positive signal
+    Toggle Save (Bookmark):
+    - If already saved → remove
+    - If not saved → create
     """
 
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        serializer = UserSaveSerializer(data=request.data)
+        content_id = request.data.get("content_item_id")
 
-        if serializer.is_valid():
-            content_item_id = serializer.validated_data["content_item_id"]
-            user = request.user
-
-            try:
-                content_item = ContentItem.objects.get(id=content_item_id)
-            except ContentItem.DoesNotExist:
-                return Response(
-                    {"error": "Content item not found"},
-                    status=status.HTTP_404_NOT_FOUND
-                )
-
-            obj, created = UserSave.objects.get_or_create(
-                user=user,
-                content_item=content_item
-            )
-
-            if not created:
-                return Response(
-                    {"message": "Content already saved"},
-                    status=status.HTTP_200_OK
-                )
-
+        if not content_id:
             return Response(
-                {"message": "Content saved successfully"},
-                status=status.HTTP_201_CREATED
+                {"error": "content_item_id is required"},
+                status=status.HTTP_400_BAD_REQUEST
             )
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            content = ContentItem.objects.get(id=content_id)
+        except ContentItem.DoesNotExist:
+            return Response(
+                {"error": "Content item not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        save_obj = UserSave.objects.filter(
+            user=request.user,
+            content_item=content
+        ).first()
+
+        # 🔁 Toggle Logic
+        if save_obj:
+            save_obj.delete()
+            return Response(
+                {"message": "Removed from saved"},
+                status=status.HTTP_200_OK
+            )
+
+        UserSave.objects.create(
+            user=request.user,
+            content_item=content
+        )
+
+        return Response(
+            {"message": "Saved successfully"},
+            status=status.HTTP_201_CREATED
+        )
 
 
 
@@ -157,3 +181,39 @@ class UserSearchCreateAPIView(APIView):
             )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+from .serializers import ContentItemSerializer
+
+class UserSavedListAPIView(APIView):
+    """
+    Returns all content items saved by the user
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        saves = UserSave.objects.filter(
+            user=request.user
+        ).select_related("content_item")
+
+        contents = [save.content_item for save in saves]
+
+        serializer = ContentItemSerializer(contents, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class UserLikedListAPIView(APIView):
+    """
+    Returns all content items liked by the user
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        likes = UserLike.objects.filter(
+            user=request.user
+        ).select_related("content_item")
+
+        contents = [like.content_item for like in likes]
+
+        serializer = ContentItemSerializer(contents, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

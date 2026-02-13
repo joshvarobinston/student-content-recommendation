@@ -31,3 +31,7 @@ class ChangePasswordSerializer(serializers.Serializer):
 class UpdateProfileSerializer(serializers.Serializer):
     first_name = serializers.CharField(required=False, allow_blank=True)
     last_name = serializers.CharField(required=False, allow_blank=True)
+
+
+class DeleteAccountSerializer(serializers.Serializer):
+    confirm = serializers.BooleanField()

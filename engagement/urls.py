@@ -1,9 +1,18 @@
 # student_Reco/engagement/urls.py
 from django.urls import path
-from .views import UserLikeCreateAPIView, UserSaveCreateAPIView, UserViewCreateAPIView, UserSearchCreateAPIView
+from .views import (
+    UserLikeToggleAPIView,
+    UserSaveToggleAPIView,
+    UserViewCreateAPIView,
+    UserSearchCreateAPIView,
+    UserSavedListAPIView,
+    UserLikedListAPIView
+    )
 urlpatterns = [
     path('views/create/', UserViewCreateAPIView.as_view(), name='user-view-create'),
-    path('likes/create/', UserLikeCreateAPIView.as_view(), name='user-like-create'),
-    path('saves/create/', UserSaveCreateAPIView.as_view(), name='user-save-create'),
+    path('like/toggle/', UserLikeToggleAPIView.as_view(), name='like-toggle'),
+    path('saves/toggle/', UserSaveToggleAPIView.as_view(), name='user-save-toggle'),
     path('searches/create/', UserSearchCreateAPIView.as_view(), name='user-search-create'),
+    path('saved/list/', UserSavedListAPIView.as_view(), name='user-saved-list'),
+    path('liked/list/', UserLikedListAPIView.as_view(), name='user-liked-list'),
 ]

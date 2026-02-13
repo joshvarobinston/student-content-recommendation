@@ -67,3 +67,45 @@ class SaveUserInterestAPIView(APIView):
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
         )
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+
+
+
+class UpdateUserInterestsAPIView(APIView):
+    """
+    Replace user's selected interests.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = UserInterestSerializer(data=request.data)
+
+        if serializer.is_valid():
+            interest_ids = serializer.validated_data["interest_ids"]
+            user = request.user
+
+            # Remove old interests
+            UserInterest.objects.filter(user=user).delete()
+
+            # Add new interests
+            for interest_id in interest_ids:
+                try:
+                    interest = InterestDomain.objects.get(id=interest_id)
+                    UserInterest.objects.create(
+                        user=user,
+                        interest=interest
+                    )
+                except InterestDomain.DoesNotExist:
+                    continue
+
+            return Response(
+                {"message": "Interests updated successfully"},
+                status=status.HTTP_200_OK
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
