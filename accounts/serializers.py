@@ -16,12 +16,12 @@ class ProfileSerializer(serializers.Serializer):
         interest_names = [ui.interest.name for ui in interests]
 
         return {
+            "username": user.username,
             "email": user.email,
             "first_name": user.first_name,
             "last_name": user.last_name,
             "joined_at": user.date_joined,
             "interests": interest_names,
-
         }
 
 class ChangePasswordSerializer(serializers.Serializer):

@@ -9,6 +9,7 @@ class SignupSerializer(serializers.Serializer):
     Signup serializer skeleton.
     Validation and user creation will be added step-by-step.
     """
+    username = serializers.CharField(max_length=150)
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
 

@@ -1,0 +1,51 @@
+[
+    {
+        "model": "content.ContentItem",
+        "pk": 1,
+        "fields": {
+            "title": "Introduction to Python Programming",
+            "description": "A comprehensive guide to Python for beginners.",
+            "content_type": "video",
+            "interest_domain": 1,
+            "source_name": "YouTube",
+            "source_url": "https://www.youtube.com/watch?v=rfscVS0vtbw",
+            "published_date": "2024-01-01T12:00:00Z",
+            "created_at": "2024-01-01T12:00:00Z",
+            "author": "FreeCodeCamp",
+            "thumbnail_url": "",
+            "duration": 14400
+        }
+    },
+    {
+        "model": "content.ContentItem",
+        "pk": 2,
+        "fields": {
+            "title": "Machine Learning Basics",
+            "description": "Understanding the fundamentals of ML.",
+            "content_type": "article",
+            "interest_domain": 1,
+            "source_name": "Medium",
+            "source_url": "https://medium.com/ml-basics",
+            "published_date": "2024-02-01T10:00:00Z",
+            "created_at": "2024-02-01T10:00:00Z",
+            "author": "John Doe",
+            "thumbnail_url": ""
+        }
+    },
+    {
+        "model": "content.ContentItem",
+        "pk": 3,
+        "fields": {
+            "title": "Deep Learning with PyTorch",
+            "description": "Advanced deep learning techniques.",
+            "content_type": "book",
+            "interest_domain": 1,
+            "source_name": "O'Reilly",
+            "source_url": "https://oreilly.com/deep-learning",
+            "published_date": "2023-11-15T09:30:00Z",
+            "created_at": "2023-11-15T09:30:00Z",
+            "author": "Jane Smith",
+            "thumbnail_url": ""
+        }
+    }
+]

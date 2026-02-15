@@ -15,7 +15,12 @@ def calculate_recency_score(content_item, decay_days=30):
         return 0
 
     now = timezone.now()
-    age_in_days = (now - content_item.published_date).days
+    published_date = content_item.published_date
+    
+    if timezone.is_naive(published_date):
+        published_date = timezone.make_aware(published_date)
+        
+    age_in_days = (now - published_date).days
 
     recency_score = math.exp(-age_in_days / decay_days)
 

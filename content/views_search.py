@@ -36,32 +36,47 @@ class ExternalSearchAPIView(APIView):
         # 1. Save search query (behavior signal)
         UserSearch.objects.create(user=user, query=query)
 
-        # 2. Fetch from YouTube , NewsAPI, books
-        videos = fetch_youtube_videos(query, max_results=3)
-        news_items = fetch_news_articles(query, max_results=3)
-        books = fetch_google_books(query, max_results=3)
+        # 2. Fetch from YouTube (Regional), NewsAPI, books
+        videos = []
+        seen_video_urls = set()
+        for region in ["US", "GB", "CA"]:
+            regional_videos = fetch_youtube_videos(query, max_results=1, region_code=region)
+            for v in regional_videos:
+                if v["source_url"] not in seen_video_urls:
+                    videos.append(v)
+                    seen_video_urls.add(v["source_url"])
+        
+        videos = videos[:3]  # Strict limit
+
+        news_items = fetch_news_articles(query, max_results=2)
+        books = fetch_google_books(query, max_results=2)
 
 
         # 3. Ingest into DB (normalized)
         domain_name = detect_interest_domain(query)
-        ingest_external_news(
+        news_objs = ingest_external_news(
             news_items,
             interest_domain_name=domain_name
         )
-        ingest_external_videos(
+        video_objs = ingest_external_videos(
             videos,
             interest_domain_name=domain_name
         )
-        ingest_external_books(
+        book_objs = ingest_external_books(
             books,
             interest_domain_name=domain_name
         )
 
-        # 4. Run ML recommender
-        ranked_items = generate_recommendations_for_user(user)
+        # 4. Combine results (Dedicated Search Context)
+        raw_contents = news_objs + video_objs + book_objs
+        
+        # Final deduplication by ID just in case
+        contents = []
+        seen_ids = set()
+        for c in raw_contents:
+            if c.id not in seen_ids:
+                contents.append(c)
+                seen_ids.add(c.id)
 
-        # 5. Serialize & return
-        contents = [item["content"] for item in ranked_items]
-
-        serializer = ContentItemSerializer(contents, many=True)
+        serializer = ContentItemSerializer(contents, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)

@@ -16,7 +16,7 @@ class ContentListAPIView(APIView):
 
     def get(self, request):
         contents = ContentItem.objects.all().order_by('-published_date')
-        serializer = ContentItemSerializer(contents, many=True)
+        serializer = ContentItemSerializer(contents, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 from rest_framework.permissions import IsAuthenticated
@@ -47,7 +47,7 @@ class InterestBasedRecommendationAPIView(APIView):
             interest_domain__in=interest_domain_ids
         ).order_by('-published_date')
 
-        serializer = ContentItemSerializer(queryset, many=True)
+        serializer = ContentItemSerializer(queryset, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 
@@ -68,6 +68,7 @@ from content.services.external.ingestion import (
     ingest_external_news,
     ingest_external_books,
 )
+from content.services.popularity import calculate_popularity_score
 
 
 class RecommendationAPIView(APIView):
@@ -148,15 +149,23 @@ class RecommendationAPIView(APIView):
         # =============================
         # 🔹 SORTING
         # =============================
+
+
         if sort_by == "newest":
+            def get_sort_key(x):
+                dt = x.published_date or timezone.now()
+                if timezone.is_naive(dt):
+                    return timezone.make_aware(dt)
+                return dt
+
             contents.sort(
-                key=lambda x: x.published_date or timezone.now(),
+                key=get_sort_key,
                 reverse=True
             )
 
         elif sort_by == "popular":
             contents.sort(
-                key=lambda x: x.engagement_events.count(),
+                key=lambda x: calculate_popularity_score(x),
                 reverse=True
             )
 
@@ -168,6 +177,6 @@ class RecommendationAPIView(APIView):
         paginator = StandardResultsPagination()
         page = paginator.paginate_queryset(contents, request)
 
-        serializer = ContentItemSerializer(page, many=True)
+        serializer = ContentItemSerializer(page, many=True, context={'request': request})
         return paginator.get_paginated_response(serializer.data)
     

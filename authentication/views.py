@@ -25,17 +25,18 @@ class SignupAPIView(APIView):
         serializer = SignupSerializer(data=request.data)
 
         if serializer.is_valid():
+            username = serializer.validated_data['username']
             email = serializer.validated_data['email']
             password = serializer.validated_data['password']
 
-            if User.objects.filter(username=email).exists():
+            if User.objects.filter(email=email).exists():
                 return Response(
-                    {"error": "User already exists"},
+                    {"error": "User with this email already exists"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
             user = User.objects.create_user(
-                username=email,
+                username=username,
                 email=email,
                 password=password
             )
@@ -69,8 +70,7 @@ class LoginAPIView(APIView):
             email = serializer.validated_data['email']
             password = serializer.validated_data['password']
 
-            user = authenticate(username=email, password=password)
-
+            user = authenticate(email=email, password=password)
             if user is None:
                 return Response(
                     {"error": "Invalid email or password"},

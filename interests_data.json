@@ -1,0 +1,149 @@
+[
+    {
+        "model": "interests.InterestDomain",
+        "pk": 1,
+        "fields": {
+            "name": "Computer Science"
+        }
+    },
+    {
+        "model": "interests.InterestDomain",
+        "pk": 2,
+        "fields": {
+            "name": "Mathematics"
+        }
+    },
+    {
+        "model": "interests.InterestDomain",
+        "pk": 3,
+        "fields": {
+            "name": "Physics"
+        }
+    },
+    {
+        "model": "interests.InterestDomain",
+        "pk": 4,
+        "fields": {
+            "name": "Chemistry"
+        }
+    },
+    {
+        "model": "interests.InterestDomain",
+        "pk": 5,
+        "fields": {
+            "name": "Biology"
+        }
+    },
+    {
+        "model": "interests.InterestDomain",
+        "pk": 6,
+        "fields": {
+            "name": "Artificial Intelligence"
+        }
+    },
+    {
+        "model": "interests.InterestDomain",
+        "pk": 7,
+        "fields": {
+            "name": "Machine Learning"
+        }
+    },
+    {
+        "model": "interests.InterestDomain",
+        "pk": 8,
+        "fields": {
+            "name": "Data Science"
+        }
+    },
+    {
+        "model": "interests.InterestDomain",
+        "pk": 9,
+        "fields": {
+            "name": "Web Development"
+        }
+    },
+    {
+        "model": "interests.InterestDomain",
+        "pk": 10,
+        "fields": {
+            "name": "Economics"
+        }
+    },
+    {
+        "model": "interests.InterestDomain",
+        "pk": 11,
+        "fields": {
+            "name": "Psychology"
+        }
+    },
+    {
+        "model": "interests.InterestDomain",
+        "pk": 12,
+        "fields": {
+            "name": "History"
+        }
+    },
+    {
+        "model": "interests.InterestDomain",
+        "pk": 13,
+        "fields": {
+            "name": "Literature"
+        }
+    },
+    {
+        "model": "interests.InterestDomain",
+        "pk": 14,
+        "fields": {
+            "name": "Philosophy"
+        }
+    },
+    {
+        "model": "interests.InterestDomain",
+        "pk": 15,
+        "fields": {
+            "name": "Business Strategy"
+        }
+    },
+    {
+        "model": "interests.InterestDomain",
+        "pk": 16,
+        "fields": {
+            "name": "Finance"
+        }
+    },
+    {
+        "model": "interests.InterestDomain",
+        "pk": 17,
+        "fields": {
+            "name": "Marketing"
+        }
+    },
+    {
+        "model": "interests.InterestDomain",
+        "pk": 18,
+        "fields": {
+            "name": "Graphic Design"
+        }
+    },
+    {
+        "model": "interests.InterestDomain",
+        "pk": 19,
+        "fields": {
+            "name": "Music Theory"
+        }
+    },
+    {
+        "model": "interests.InterestDomain",
+        "pk": 20,
+        "fields": {
+            "name": "Robotics"
+        }
+    },
+    {
+        "model": "interests.InterestDomain",
+        "pk": 21,
+        "fields": {
+            "name": "Others"
+        }
+    }
+]

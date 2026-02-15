@@ -7,23 +7,26 @@ from django.conf import settings
 YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search"
 
 
-def fetch_youtube_videos(query, max_results=3):
+def fetch_youtube_videos(query, max_results=3, region_code=None):
     """
-    Fetch videos from YouTube based on a search query.
-    Returns raw video data (no ML, no DB).
+    Fetch educational videos from YouTube based on a search query.
     """
+    
+    educational_query = f"{query} educational academic tutorial"
 
     params = {
-    "part": "snippet",
-    "q": query,
-    "type": "video",
-    "maxResults": max_results,
-    "key": settings.YOUTUBE_API_KEY,
-    # ✅ Language & region filters
-    "relevanceLanguage": "en",
-    "language": "en",
-    
-}
+        "part": "snippet",
+        "q": educational_query,
+        "type": "video",
+        "videoCategoryId": "27",  # Education category
+        "maxResults": max_results,
+        "key": settings.YOUTUBE_API_KEY,
+        "relevanceLanguage": "en",
+        "language": "en",
+    }
+
+    if region_code:
+        params["regionCode"] = region_code
 
 
     response = requests.get(YOUTUBE_SEARCH_URL, params=params)

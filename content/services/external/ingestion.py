@@ -1,8 +1,19 @@
 # student_Reco/content/services/external/ingestion.py
 
 from django.utils.dateparse import parse_datetime
+from django.utils.timezone import now, make_aware, is_naive
 from content.models import ContentItem
 from interests.models import InterestDomain
+
+def make_datetime_aware(dt_str):
+    if not dt_str:
+        return now()
+    dt = parse_datetime(dt_str)
+    if not dt:
+        return now()
+    if is_naive(dt):
+        return make_aware(dt)
+    return dt
 
 # for videos
 def ingest_external_videos(videos, interest_domain_name):
@@ -15,25 +26,23 @@ def ingest_external_videos(videos, interest_domain_name):
         name=interest_domain_name
     )
 
-    saved_items = []
+    all_items = []
 
     for video in videos:
-        if ContentItem.objects.filter(source_url=video["source_url"]).exists():
-            continue
+        item = ContentItem.objects.filter(source_url=video["source_url"]).first()
+        if not item:
+            item = ContentItem.objects.create(
+                title=video["title"],
+                description=video["description"],
+                content_type="video",
+                source_name=video["source_name"],
+                source_url=video["source_url"],
+                published_date=make_datetime_aware(video["published_date"]),
+                interest_domain=interest_domain,
+            )
+        all_items.append(item)
 
-        item = ContentItem.objects.create(
-            title=video["title"],
-            description=video["description"],
-            content_type="video",
-            source_name=video["source_name"],
-            source_url=video["source_url"],
-            published_date=parse_datetime(video["published_date"]),
-            interest_domain=interest_domain,
-        )
-
-        saved_items.append(item)
-
-    return saved_items
+    return all_items
 
 # for news articles
 def ingest_external_news(articles, interest_domain_name):
@@ -46,31 +55,23 @@ def ingest_external_news(articles, interest_domain_name):
         name=interest_domain_name
     )
 
-    saved_items = []
+    all_items = []
 
     for article in articles:
-        if ContentItem.objects.filter(source_url=article["source_url"]).exists():
-            continue
+        item = ContentItem.objects.filter(source_url=article["source_url"]).first()
+        if not item:
+            item = ContentItem.objects.create(
+                title=article["title"],
+                description=article["description"],
+                content_type="article",
+                source_name=article["source_name"],
+                source_url=article["source_url"],
+                published_date=make_datetime_aware(article["published_date"]),
+                interest_domain=interest_domain,
+            )
+        all_items.append(item)
 
-        item = ContentItem.objects.create(
-            title=article["title"],
-            description=article["description"],
-            content_type="article",
-            source_name=article["source_name"],
-            source_url=article["source_url"],
-            published_date=parse_datetime(article["published_date"]),
-            interest_domain=interest_domain,
-        )
-
-        saved_items.append(item)
-
-    return saved_items
-from django.utils.timezone import now
-from django.utils.dateparse import parse_datetime
-from content.models import ContentItem
-from interests.models import InterestDomain
-# for books
-
+    return all_items
 def ingest_external_books(books, interest_domain_name):
     """
     Stores external (Google Books) books into ContentItem table.
@@ -83,26 +84,22 @@ def ingest_external_books(books, interest_domain_name):
         name=interest_domain_name
     )
 
-    saved_items = []
+    all_items = []
 
     for book in books:
-        if ContentItem.objects.filter(source_url=book["source_url"]).exists():
-            continue
+        item = ContentItem.objects.filter(source_url=book["source_url"]).first()
+        if not item:
+            published_date = make_datetime_aware(book.get("published_date"))
 
-        published_date = parse_datetime(book.get("published_date", ""))
-        if not published_date:
-            published_date = now()
+            item = ContentItem.objects.create(
+                title=book.get("title", ""),
+                description=book.get("description", ""),
+                content_type="book",
+                source_name=book.get("source_name", "Google Books"),
+                source_url=book.get("source_url", ""),
+                published_date=published_date,
+                interest_domain=interest_domain,
+            )
+        all_items.append(item)
 
-        item = ContentItem.objects.create(
-            title=book.get("title", ""),
-            description=book.get("description", ""),
-            content_type="book",
-            source_name=book.get("source_name", "Google Books"),
-            source_url=book.get("source_url", ""),
-            published_date=published_date,
-            interest_domain=interest_domain,
-        )
-
-        saved_items.append(item)
-
-    return saved_items
+    return all_items
