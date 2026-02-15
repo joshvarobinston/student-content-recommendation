@@ -13,6 +13,10 @@ db.sqlite3
 media/
 staticfiles/
 .env
+API_REPORT.md
+content_data.json
+interests_data.json
+test_full_journey.py
 
 # Node / React
 node_modules/
