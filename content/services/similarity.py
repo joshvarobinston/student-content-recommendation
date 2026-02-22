@@ -1,3 +1,5 @@
+# student_reco/content/services/similarity.py
+
 from sklearn.metrics.pairwise import cosine_similarity
 
 

@@ -17,16 +17,14 @@ from .serializers import SignupSerializer, LoginSerializer
 
 # Authentication views for signup
 class SignupAPIView(APIView):
-    """
-    Signup API – creates user securely
-    """
-
     def post(self, request):
         serializer = SignupSerializer(data=request.data)
 
         if serializer.is_valid():
             email = serializer.validated_data['email']
             password = serializer.validated_data['password']
+            first_name = serializer.validated_data['first_name']
+            last_name = serializer.validated_data['last_name']
 
             if User.objects.filter(username=email).exists():
                 return Response(
@@ -34,13 +32,15 @@ class SignupAPIView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
+            # ✅ Save first_name and last_name
             user = User.objects.create_user(
                 username=email,
                 email=email,
-                password=password
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
             )
 
-            # create related profile and settings
             UserProfile.objects.create(user=user)
             UserSettings.objects.create(user=user)
 

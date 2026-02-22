@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# student_reco/manage.py
+
 """Django's command-line utility for administrative tasks."""
 import os
 import sys

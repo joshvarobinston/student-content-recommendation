@@ -1,3 +1,5 @@
+# student_reco/library/apps.py
+
 from django.apps import AppConfig
 
 
