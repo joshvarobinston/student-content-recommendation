@@ -1,13 +1,18 @@
 # student_Reco/engagement/views.py
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
-from .models import UserView
-from .serializers import UserViewCreateSerializer
+from .models import UserView, UserLike, UserSave, UserSearch
+from .serializers import (
+    UserViewCreateSerializer,
+    UserLikeCreateSerializer,
+    UserSearchCreateSerializer,
+)
 from content.models import ContentItem
+from content.serializers import ContentItemSerializer
+
 
 
 class UserViewCreateAPIView(APIView):
@@ -45,8 +50,6 @@ class UserViewCreateAPIView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-from .models import UserLike
-from .serializers import UserLikeCreateSerializer
 
 
 class UserLikeToggleAPIView(APIView):
@@ -100,7 +103,6 @@ class UserLikeToggleAPIView(APIView):
 
 # student_Reco/engagement/views.py
 
-from .models import UserSave
 
 
 class UserSaveToggleAPIView(APIView):
@@ -154,8 +156,6 @@ class UserSaveToggleAPIView(APIView):
 
 
 
-from .models import UserSearch
-from .serializers import UserSearchCreateSerializer
 
 
 class UserSearchCreateAPIView(APIView):
@@ -181,8 +181,7 @@ class UserSearchCreateAPIView(APIView):
             )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-from .serializers import ContentItemSerializer
+
 
 class UserSavedListAPIView(APIView):
     """

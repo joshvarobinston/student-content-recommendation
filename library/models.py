@@ -42,7 +42,8 @@ class LibraryItem(models.Model):
 
     content_item = models.ForeignKey(
         ContentItem,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name="library_items"  
     )
 
     added_at = models.DateTimeField(auto_now_add=True)

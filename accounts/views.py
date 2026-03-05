@@ -5,7 +5,17 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
-from .serializers import ProfileSerializer
+from .serializers import (ProfileSerializer, 
+                          ChangePasswordSerializer, 
+                          DeleteAccountSerializer,
+                          UpdateProfileSerializer)
+from content.serializers import ContentItemSerializer
+
+from interests.models import InterestDomain, UserInterest
+from engagement.models import UserSave, UserLike
+
+from django.contrib.auth.hashers import check_password
+
 
 # For Profile API
 
@@ -20,10 +30,9 @@ class ProfileAPIView(APIView):
         user = request.user
         data = ProfileSerializer.from_user(user)
         return Response(data, status=status.HTTP_200_OK)
+    
 
-# Additional API to update user interests from profile/settings page
-from interests.models import InterestDomain, UserInterest
-
+# For updating user interests (domains) in Profile / Settings page
 
 class UpdateUserInterestsAPIView(APIView):
     """
@@ -62,12 +71,8 @@ class UpdateUserInterestsAPIView(APIView):
             {"message": "Interests updated successfully"},
             status=status.HTTP_200_OK
         )
-    
 
-from engagement.models import UserSave
-from content.serializers import ContentItemSerializer
-
-
+# For Saved Items and Liked Items APIs in Profile page
 class SavedItemsAPIView(APIView):
     """
     Returns all content items saved by the logged-in user
@@ -84,8 +89,6 @@ class SavedItemsAPIView(APIView):
 
         serializer = ContentItemSerializer(contents, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-from engagement.models import UserLike
-
 
 class LikedItemsAPIView(APIView):
     """
@@ -105,9 +108,7 @@ class LikedItemsAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-from django.contrib.auth.hashers import check_password
-from .serializers import ChangePasswordSerializer
-
+# For Change Password, Delete Account, and Update Profile APIs in Settings page
 
 class ChangePasswordAPIView(APIView):
     """
@@ -140,13 +141,6 @@ class ChangePasswordAPIView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
-
-from .serializers import DeleteAccountSerializer
-
 
 class DeleteAccountAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -167,10 +161,6 @@ class DeleteAccountAPIView(APIView):
         user.delete()
 
         return Response({"message": "Account deleted successfully"}, status=status.HTTP_200_OK)
-
-
-
-from .serializers import UpdateProfileSerializer
 
 
 class UpdateProfileAPIView(APIView):

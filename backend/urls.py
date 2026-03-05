@@ -29,5 +29,5 @@ urlpatterns = [
     path("api/settings/", include("settings_app.urls")),
     path("api/library/", include("library.urls")),
 
- 
+
 ]

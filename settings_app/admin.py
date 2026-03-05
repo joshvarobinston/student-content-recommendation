@@ -1,8 +1,9 @@
 # student_reco/settings_app/admin.py
-
 from django.contrib import admin
-
-# Register your models here.
 from .models import UserSettings
 
-admin.site.register(UserSettings)
+@admin.register(UserSettings)
+class UserSettingsAdmin(admin.ModelAdmin):
+    list_display = ("user", "theme", "language", "items_per_page", "updated_at")
+    list_filter = ("theme", "language", "preferred_content_type")
+    search_fields = ("user__username",)

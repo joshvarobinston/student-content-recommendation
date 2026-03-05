@@ -14,4 +14,6 @@ class UserSettingsSerializer(serializers.ModelSerializer):
             "language",
             "track_search_history",
             "track_view_history",
+            "updated_at",  # ✅ ADD THIS
         ]
+        read_only_fields = ["updated_at"]  # ✅ ADD THIS

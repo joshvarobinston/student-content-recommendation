@@ -104,7 +104,13 @@ class FolderItemsAPIView(APIView):
 
         items = LibraryItem.objects.filter(folder=folder).order_by("-added_at")
         serializer = LibraryItemSerializer(items, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+
+        # ✅ Return folder name too so frontend can show it
+        return Response({
+            "folder_name": folder.name,
+            "folder_description": folder.description,
+            "items": serializer.data
+        }, status=status.HTTP_200_OK)
 
 
 # ✅ 6) REMOVE ITEM FROM FOLDER (only owner can remove)

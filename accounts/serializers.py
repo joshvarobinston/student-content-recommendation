@@ -6,7 +6,10 @@ from interests.models import UserInterest
 
 
 class ProfileSerializer(serializers.Serializer):
+
     email = serializers.EmailField()
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
     joined_at = serializers.DateTimeField()
     interests = serializers.ListField(child=serializers.CharField())
 
