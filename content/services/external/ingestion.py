@@ -1,108 +1,138 @@
 # student_Reco/content/services/external/ingestion.py
 
-from django.utils.dateparse import parse_datetime
-from content.models import ContentItem
-from interests.models import InterestDomain
-
-# for videos
-def ingest_external_videos(videos, interest_domain_name):
-    """
-    Stores external (YouTube) videos into ContentItem table.
-    Avoids duplicates using source_url.
-    """
-
-    interest_domain, _ = InterestDomain.objects.get_or_create(
-        name=interest_domain_name
-    )
-
-    saved_items = []
-
-    for video in videos:
-        if ContentItem.objects.filter(source_url=video["source_url"]).exists():
-            continue
-
-        item = ContentItem.objects.create(
-            title=video["title"],
-            description=video["description"],
-            content_type="video",
-            source_name=video["source_name"],
-            source_url=video["source_url"],
-            published_date=parse_datetime(video["published_date"]),
-            interest_domain=interest_domain,
-        )
-
-        saved_items.append(item)
-
-    return saved_items
-
-# for news articles
-def ingest_external_news(articles, interest_domain_name):
-    """
-    Stores external (NewsAPI) articles into ContentItem table.
-    Avoids duplicates using source_url.
-    """
-
-    interest_domain, _ = InterestDomain.objects.get_or_create(
-        name=interest_domain_name
-    )
-
-    saved_items = []
-
-    for article in articles:
-        if ContentItem.objects.filter(source_url=article["source_url"]).exists():
-            continue
-
-        item = ContentItem.objects.create(
-            title=article["title"],
-            description=article["description"],
-            content_type="article",
-            source_name=article["source_name"],
-            source_url=article["source_url"],
-            published_date=parse_datetime(article["published_date"]),
-            interest_domain=interest_domain,
-        )
-
-        saved_items.append(item)
-
-    return saved_items
 from django.utils.timezone import now
 from django.utils.dateparse import parse_datetime
 from content.models import ContentItem
 from interests.models import InterestDomain
-# for books
+from content.services.tfidf import invalidate_tfidf_cache
 
-def ingest_external_books(books, interest_domain_name):
+
+def _get_or_create_domain(name):
+    """Helper to get or create interest domain"""
+    domain, _ = InterestDomain.objects.get_or_create(name=name)
+    return domain
+
+
+def ingest_external_videos(videos, interest_domain_name, language='en'):
     """
-    Stores external (Google Books) books into ContentItem table.
+    Stores YouTube videos into ContentItem table.
     Avoids duplicates using source_url.
     """
+    interest_domain = _get_or_create_domain(interest_domain_name)
+    saved_items = []
 
-    
+    for video in videos:
+        source_url = video.get("source_url", "")
+        if not source_url:
+            continue
 
-    interest_domain, _ = InterestDomain.objects.get_or_create(
-        name=interest_domain_name
-    )
+        if ContentItem.objects.filter(source_url=source_url).exists():
+            continue
 
+        published = parse_datetime(video.get("published_date", ""))
+        if not published:
+            published = now()
+
+        item = ContentItem.objects.create(
+            title=video.get("title", ""),
+            description=video.get("description", ""),
+            content_type="video",
+            source_name=video.get("source_name", "YouTube"),
+            source_url=source_url,
+            thumbnail_url=video.get("thumbnail_url", ""),
+            published_date=published,
+            interest_domain=interest_domain,
+            language=language,  # ✅ Save language
+        )
+        saved_items.append(item)
+
+    if saved_items:
+        invalidate_tfidf_cache()
+
+    return saved_items
+
+
+def ingest_external_news(articles, interest_domain_name, language='en'):
+    """
+    Stores NewsAPI articles into ContentItem table.
+    Avoids duplicates using source_url.
+    """
+    interest_domain = _get_or_create_domain(interest_domain_name)
+    saved_items = []
+
+    for article in articles:
+        source_url = article.get("source_url", "")
+        if not source_url:
+            continue
+
+        if ContentItem.objects.filter(source_url=source_url).exists():
+            continue
+
+        published = parse_datetime(article.get("published_date", ""))
+        if not published:
+            published = now()
+
+        item = ContentItem.objects.create(
+            title=article.get("title", ""),
+            description=article.get("description", ""),
+            content_type="news",
+            source_name=article.get("source_name", ""),
+            source_url=source_url,
+            thumbnail_url=article.get("thumbnail_url", ""),
+            published_date=published,
+            interest_domain=interest_domain,
+            language=language,  # ✅ Save language
+        )
+        saved_items.append(item)
+
+    if saved_items:
+        invalidate_tfidf_cache()
+
+    return saved_items
+
+
+def ingest_external_books(books, interest_domain_name, language='en'):
+    """
+    Stores Google Books into ContentItem table.
+    Avoids duplicates using source_url.
+    """
+    interest_domain = _get_or_create_domain(interest_domain_name)
     saved_items = []
 
     for book in books:
-        if ContentItem.objects.filter(source_url=book["source_url"]).exists():
+        source_url = book.get("source_url", "")
+        if not source_url:
             continue
 
-        published_date = parse_datetime(book.get("published_date", ""))
-        if not published_date:
-            published_date = now()
+        if ContentItem.objects.filter(source_url=source_url).exists():
+            continue
+
+        # ✅ Handle partial dates like "2023" or "2023-05"
+        published = None
+        date_str = book.get("published_date", "")
+        if date_str:
+            try:
+                from dateutil import parser as date_parser
+                published = date_parser.parse(date_str)
+            except Exception:
+                published = now()
+        if not published:
+            published = now()
 
         item = ContentItem.objects.create(
             title=book.get("title", ""),
             description=book.get("description", ""),
             content_type="book",
             source_name=book.get("source_name", "Google Books"),
-            source_url=book.get("source_url", ""),
-            published_date=published_date,
+            source_url=source_url,
+            thumbnail_url=book.get("thumbnail_url", ""),
+            published_date=published,
             interest_domain=interest_domain,
+            language=language,  # ✅ Save language
         )
-
         saved_items.append(item)
+
+    if saved_items:
+        invalidate_tfidf_cache()
 
     return saved_items

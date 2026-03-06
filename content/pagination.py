@@ -1,4 +1,4 @@
-# student_Reco/library/urls.py
+# student_Reco/content/pagination.py
 
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response

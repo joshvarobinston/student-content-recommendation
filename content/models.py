@@ -17,12 +17,28 @@ class ContentItem(models.Model):
         ('book', 'Book / Research Paper'),
     )
 
+    LANGUAGE_CHOICES = (
+        ('en', 'English'),
+        ('es', 'Spanish'),
+        ('fr', 'French'),
+        ('de', 'German'),
+        ('hi', 'Hindi'),
+        ('ta', 'Tamil'),
+    )
+
     # Core ML text fields
     title = models.CharField(max_length=255)
     description = models.TextField()
 
     # Content classification
     content_type = models.CharField(max_length=20, choices=CONTENT_TYPES)
+
+    # ✅ Language field
+    language = models.CharField(
+        max_length=10,
+        choices=LANGUAGE_CHOICES,
+        default='en'
+    )
 
     # Interest-based filtering (critical for recommendations)
     interest_domain = models.ForeignKey(
