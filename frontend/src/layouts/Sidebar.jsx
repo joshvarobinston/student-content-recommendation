@@ -94,13 +94,13 @@ const Sidebar = () => {
       {/* Bottom Links */}
       <div className="mt-auto px-3 border-t border-slate-100 pt-4 flex flex-col gap-1">
         <button
-          onClick={() => navigate('/saved-items')}
+          onClick={() => navigate('/saved')}
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-all"
         >
           🔖 Saved Items
         </button>
         <button
-          onClick={() => navigate('/liked-items')}
+          onClick={() => navigate('/liked')}
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-all"
         >
           ❤️ Liked Items

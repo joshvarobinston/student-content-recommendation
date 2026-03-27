@@ -13,6 +13,8 @@ class ContentItemSerializer(serializers.ModelSerializer):
     likes_count = serializers.IntegerField(source='userlike_set.count', read_only=True)
     saves_count = serializers.IntegerField(source='usersave_set.count', read_only=True)
     views_count = serializers.IntegerField(source='userview_set.count', read_only=True)
+    is_liked = serializers.SerializerMethodField()  # ✅ NEW
+    is_saved = serializers.SerializerMethodField()  # ✅ NEW
 
     class Meta:
         model = ContentItem
@@ -31,6 +33,8 @@ class ContentItemSerializer(serializers.ModelSerializer):
             'likes_count',
             'saves_count',
             'views_count',
+            'is_liked',   # ✅ NEW
+            'is_saved',   # ✅ NEW
         ]
 
     def get_popularity_score(self, obj):
@@ -38,3 +42,15 @@ class ContentItemSerializer(serializers.ModelSerializer):
 
     def get_recency_score(self, obj):
         return calculate_recency_score(obj)
+
+    def get_is_liked(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.userlike_set.filter(user=request.user).exists()
+        return False
+
+    def get_is_saved(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.usersave_set.filter(user=request.user).exists()
+        return False

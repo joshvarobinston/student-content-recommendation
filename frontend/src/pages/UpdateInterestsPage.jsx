@@ -1,4 +1,5 @@
 // pages/UpdateInterestsPage.jsx
+
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
@@ -6,6 +7,8 @@ import { getInterestDomains, saveInterests } from '../api/interestsApi'
 import { getProfile } from '../api/accountApi'
 import MainLayout from '../layouts/MainLayout'
 import Loader from '../components/common/Loader'
+
+const MIN_INTERESTS = 3
 
 const UpdateInterestsPage = () => {
   const navigate = useNavigate()
@@ -46,8 +49,8 @@ const UpdateInterestsPage = () => {
   }
 
   const handleSave = async () => {
-    if (selected.length === 0) {
-      toast.error('Please select at least one interest')
+    if (selected.length < MIN_INTERESTS) {
+      toast.error(`Please select at least ${MIN_INTERESTS} interests`)
       return
     }
 
@@ -67,23 +70,24 @@ const UpdateInterestsPage = () => {
     }
   }
 
+  // ✅ FIXED: Icons now match actual CS interest domains from the backend
   const icons = {
-    default: '📚',
-    'Computer Science': '💻',
-    'Medical': '🏥',
-    'Business': '💼',
-    'Engineering': '⚙️',
-    'Mathematics': '📐',
-    'Physics': '🔭',
-    'Chemistry': '🧪',
-    'Biology': '🧬',
-    'History': '🏛️',
-    'Literature': '📖',
-    'Arts': '🎨',
-    'Music': '🎵',
-    'Psychology': '🧠',
-    'Law': '⚖️',
-    'Economics': '📈',
+    'Computer Science':      '💻',
+    'Artificial Intelligence': '🤖',
+    'Machine Learning':      '🧠',
+    'Data Science':          '📊',
+    'Web Development':       '🌐',
+    'Mobile Development':    '📱',
+    'Cybersecurity':         '🔒',
+    'Cloud Computing':       '☁️',
+    'Software Engineering':  '⚙️',
+    'Database Systems':      '🗄️',
+    'Computer Networks':     '🌍',
+    'Programming':           '💡',
+    'DevOps':                '🔧',
+    'Blockchain':            '🔗',
+    'Internet of Things':    '📡',
+    'default':               '📚',
   }
 
   if (loading) return <MainLayout><Loader /></MainLayout>
@@ -94,7 +98,7 @@ const UpdateInterestsPage = () => {
 
         <h1 className="font-heading font-bold text-2xl text-slate-800 mb-2">Update Interests</h1>
         <p className="text-slate-400 text-sm mb-6">
-          Update your interests to get better recommendations
+          Select at least {MIN_INTERESTS} interests to get better recommendations
         </p>
 
         {/* Interest Grid */}
@@ -111,8 +115,8 @@ const UpdateInterestsPage = () => {
                     : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-200'
                 }`}
               >
-                <span className="text-3xl">{icons[domain.name] || icons.default}</span>
-                <span className="text-sm font-medium text-center">{domain.name}</span>
+                <span className="text-3xl">{icons[domain.name] || icons['default']}</span>
+                <span className="text-sm font-medium text-center leading-tight">{domain.name}</span>
                 {isSelected && (
                   <span className="text-xs text-indigo-500 font-semibold">✓ Selected</span>
                 )}
@@ -121,8 +125,11 @@ const UpdateInterestsPage = () => {
           })}
         </div>
 
-        <p className="text-slate-400 text-sm mb-6 text-center">
-          {selected.length} interest{selected.length !== 1 ? 's' : ''} selected
+        <p className={`text-sm mb-6 text-center ${
+          selected.length >= MIN_INTERESTS ? 'text-green-500' : 'text-slate-400'
+        }`}>
+          {selected.length} of {MIN_INTERESTS} minimum selected
+          {selected.length >= MIN_INTERESTS && ' ✓'}
         </p>
 
         {/* Buttons */}
@@ -135,8 +142,8 @@ const UpdateInterestsPage = () => {
           </button>
           <button
             onClick={handleSave}
-            disabled={saving || selected.length === 0}
-            className="px-8 py-2.5 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white font-semibold rounded-xl transition-colors text-sm"
+            disabled={saving || selected.length < MIN_INTERESTS}
+            className="px-8 py-2.5 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors text-sm"
           >
             {saving ? 'Saving...' : 'Save Interests'}
           </button>

@@ -25,26 +25,17 @@ from settings_app.models import UserSettings
 
 
 class ContentListAPIView(APIView):
-    """
-    Read-only API to list all content items.
-    """
     def get(self, request):
         contents = ContentItem.objects.all().order_by('-published_date')
-        serializer = ContentItemSerializer(contents, many=True)
+        serializer = ContentItemSerializer(contents, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class InterestBasedRecommendationAPIView(APIView):
-    """
-    Simple interest-based filtering without ML.
-    Filters content by user's interest domains and language.
-    """
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user
-
-        # Get user language preference
         user_settings, _ = UserSettings.objects.get_or_create(user=user)
         preferred_language = user_settings.language
 
@@ -54,18 +45,14 @@ class InterestBasedRecommendationAPIView(APIView):
 
         queryset = ContentItem.objects.filter(
             interest_domain__in=interest_domain_ids,
-            language=preferred_language  # ✅ Filter by language
+            language=preferred_language
         ).order_by('-published_date')
 
-        serializer = ContentItemSerializer(queryset, many=True)
+        serializer = ContentItemSerializer(queryset, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 def _fetch_and_ingest_for_user(user, language='en'):
-    """
-    Helper: Fetches fresh content from all APIs
-    for ALL of the user's interest domains.
-    """
     user_interests = UserInterest.objects.filter(
         user=user
     ).select_related('interest')
@@ -93,38 +80,31 @@ def _fetch_and_ingest_for_user(user, language='en'):
 
 
 class RecommendationAPIView(APIView):
-    """
-    Main ML-powered recommendation feed.
-
-    Query params:
-    - type   : video | news | article | book
-    - sort   : relevant | newest | popular
-    - date   : 24h | week | month
-    - refresh: true → forces fresh content fetch from APIs
-    """
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user
 
-        # ── Query Parameters ──────────────────────────
-        content_type = request.query_params.get("type")
+        # ✅ Accept both 'type' and 'content_type' from frontend
+        content_type = request.query_params.get("content_type") or request.query_params.get("type")
         sort_by = request.query_params.get("sort", "relevant")
         date_filter = request.query_params.get("date")
         refresh = request.query_params.get("refresh", "false").lower() == "true"
 
-        # ── Get User Language Preference ──────────────
-        user_settings, _ = UserSettings.objects.get_or_create(user=user)
-        preferred_language = user_settings.language  # default 'en'
+        # Normalize empty string to None
+        if content_type == '' or content_type == 'all':
+            content_type = None
 
-        # ── Refresh Content ───────────────────────────
+        # Get user language preference
+        user_settings, _ = UserSettings.objects.get_or_create(user=user)
+        preferred_language = user_settings.language
+
+        # Refresh or fetch content
         if refresh:
             invalidate_tfidf_cache()
-            _fetch_and_ingest_for_user(user, language=preferred_language)
-        else:
-            _fetch_and_ingest_for_user(user, language=preferred_language)
+        _fetch_and_ingest_for_user(user, language=preferred_language)
 
-        # ── ML Ranking ────────────────────────────────
+        # ML Ranking
         ranked_items = generate_recommendations_for_user(
             user,
             content_type=content_type
@@ -132,13 +112,17 @@ class RecommendationAPIView(APIView):
 
         contents = [item["content"] for item in ranked_items]
 
-        # ── Language Filter ───────────────────────────
+        # ✅ Explicitly filter by content_type AFTER ML ranking
+        if content_type:
+            contents = [c for c in contents if c.content_type == content_type]
+
+        # Language Filter
         contents = [
             c for c in contents
             if c.language == preferred_language
         ]
 
-        # ── Date Filter ───────────────────────────────
+        # Date Filter
         if date_filter:
             now_time = timezone.now()
             cutoff_map = {
@@ -153,7 +137,7 @@ class RecommendationAPIView(APIView):
                     if c.published_date and c.published_date >= cutoff
                 ]
 
-        # ── Sorting ───────────────────────────────────
+        # Sorting
         if sort_by == "newest":
             contents.sort(
                 key=lambda x: x.published_date or timezone.now(),
@@ -168,37 +152,23 @@ class RecommendationAPIView(APIView):
                 ),
                 reverse=True
             )
-        # "relevant" = already ML sorted
 
-        # ── Pagination ────────────────────────────────
+        # Pagination
         paginator = StandardResultsPagination()
         page = paginator.paginate_queryset(contents, request)
-        serializer = ContentItemSerializer(page, many=True)
+        serializer = ContentItemSerializer(page, many=True, context={'request': request})
         return paginator.get_paginated_response(serializer.data)
-    
 
 
 class RefreshContentAPIView(APIView):
-    """
-    Dedicated refresh endpoint.
-    Forces fresh content fetch from all APIs
-    for the user's interests and clears TF-IDF cache.
-
-    POST /api/content/refresh/
-    """
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         user = request.user
-
-        # Get language preference
         user_settings, _ = UserSettings.objects.get_or_create(user=user)
         preferred_language = user_settings.language
 
-        # Invalidate TF-IDF cache
         invalidate_tfidf_cache()
-
-        # Fetch fresh content
         _fetch_and_ingest_for_user(user, language=preferred_language)
 
         return Response(

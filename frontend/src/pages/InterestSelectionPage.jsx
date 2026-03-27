@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { getInterestDomains, saveInterests } from '../api/interestsApi'
 
+const MIN_INTERESTS = 3
+
 const InterestSelectionPage = () => {
   const navigate = useNavigate()
 
@@ -12,7 +14,6 @@ const InterestSelectionPage = () => {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
-  // Load all interest domains on mount
   useEffect(() => {
     const fetchDomains = async () => {
       try {
@@ -27,7 +28,6 @@ const InterestSelectionPage = () => {
     fetchDomains()
   }, [])
 
-  // Toggle interest selection
   const toggleInterest = (id) => {
     setSelected((prev) =>
       prev.includes(id)
@@ -36,13 +36,11 @@ const InterestSelectionPage = () => {
     )
   }
 
-  // Save selected interests
   const handleSave = async () => {
-    if (selected.length === 0) {
-      toast.error('Please select at least one interest')
+    if (selected.length < MIN_INTERESTS) {   // ✅ Min 3 enforced
+      toast.error(`Please select at least ${MIN_INTERESTS} interests`)
       return
     }
-
     setSaving(true)
     try {
       await saveInterests({ interest_ids: selected })
@@ -59,24 +57,23 @@ const InterestSelectionPage = () => {
     }
   }
 
-  // Interest icons map
   const icons = {
     default: '📚',
     'Computer Science': '💻',
-    'Medical': '🏥',
-    'Business': '💼',
-    'Engineering': '⚙️',
-    'Mathematics': '📐',
-    'Physics': '🔭',
-    'Chemistry': '🧪',
-    'Biology': '🧬',
-    'History': '🏛️',
-    'Literature': '📖',
-    'Arts': '🎨',
-    'Music': '🎵',
-    'Psychology': '🧠',
-    'Law': '⚖️',
-    'Economics': '📈',
+    'Artificial Intelligence': '🤖',
+    'Machine Learning': '🧠',
+    'Data Science': '📊',
+    'Web Development': '🌐',
+    'Mobile Development': '📱',
+    'Cybersecurity': '🔒',
+    'Cloud Computing': '☁️',
+    'Software Engineering': '⚙️',
+    'Database Systems': '🗄️',
+    'Computer Networks': '🌍',
+    'Programming': '💡',
+    'DevOps': '🔧',
+    'Blockchain': '🔗',
+    'Internet of Things': '📡',
   }
 
   return (
@@ -95,17 +92,15 @@ const InterestSelectionPage = () => {
             What are you interested in?
           </h1>
           <p className="text-white/50 text-base">
-            Select your interests so we can personalize your content feed
+            Select at least {MIN_INTERESTS} interests to personalize your feed
           </p>
         </div>
 
-        {/* Loading */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
-
           <>
             {/* Interest Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-8">
@@ -128,9 +123,7 @@ const InterestSelectionPage = () => {
                       {domain.name}
                     </span>
                     {isSelected && (
-                      <span className="text-xs text-indigo-400 font-semibold">
-                        ✓ Selected
-                      </span>
+                      <span className="text-xs text-indigo-400 font-semibold">✓ Selected</span>
                     )}
                   </button>
                 )
@@ -138,15 +131,18 @@ const InterestSelectionPage = () => {
             </div>
 
             {/* Selected Count */}
-            <p className="text-center text-white/40 text-sm mb-6">
-              {selected.length} interest{selected.length !== 1 ? 's' : ''} selected
+            <p className={`text-center text-sm mb-6 ${
+              selected.length >= MIN_INTERESTS ? 'text-green-400' : 'text-white/40'
+            }`}>
+              {selected.length} of {MIN_INTERESTS} minimum selected
+              {selected.length >= MIN_INTERESTS && ' ✓'}
             </p>
 
             {/* Save Button */}
             <div className="flex justify-center">
               <button
                 onClick={handleSave}
-                disabled={saving || selected.length === 0}
+                disabled={saving || selected.length < MIN_INTERESTS}  // ✅ Disabled until 3 selected
                 className="px-12 py-3.5 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all shadow-lg"
               >
                 {saving ? 'Saving...' : 'Continue to Feed →'}

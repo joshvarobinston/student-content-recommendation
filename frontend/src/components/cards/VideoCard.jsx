@@ -8,32 +8,34 @@ import { formatDate } from '../../utils/formatDate'
 import { toast } from 'react-toastify'
 
 const VideoCard = ({ content }) => {
-  const [liked, setLiked] = useState(false)
-  const [saved, setSaved] = useState(false)
+  // ✅ Initialize from backend data
+  const [liked, setLiked] = useState(content.is_liked || false)
+  const [saved, setSaved] = useState(content.is_saved || false)
+  const [likesCount, setLikesCount] = useState(content.likes_count || 0)
+  const [savesCount, setSavesCount] = useState(content.saves_count || 0)
 
-  // Handle like toggle
   const handleLike = async (e) => {
     e.preventDefault()
     try {
       await toggleLike({ content_item_id: content.id })
       setLiked(!liked)
+      setLikesCount(liked ? likesCount - 1 : likesCount + 1)
     } catch (error) {
       toast.error('Failed to like content')
     }
   }
 
-  // Handle save toggle
   const handleSave = async (e) => {
     e.preventDefault()
     try {
       await toggleSave({ content_item_id: content.id })
       setSaved(!saved)
+      setSavesCount(saved ? savesCount - 1 : savesCount + 1)
     } catch (error) {
       toast.error('Failed to save content')
     }
   }
 
-  // Handle view recording
   const handleView = async () => {
     try {
       await recordView({ content_item_id: content.id, view_duration: 0 })
@@ -62,8 +64,6 @@ const VideoCard = ({ content }) => {
             <span className="text-4xl">🎥</span>
           </div>
         )}
-
-        {/* Video badge */}
         <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-md">
           VIDEO
         </span>
@@ -86,30 +86,28 @@ const VideoCard = ({ content }) => {
           <span>{formatDate(content.published_date)}</span>
         </div>
 
-        {/* Like + Save buttons */}
+        {/* ✅ Like + Save with counts */}
         <div className="flex items-center gap-3 pt-2 border-t border-slate-100">
           <button
             onClick={handleLike}
             className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-red-500 transition-colors"
           >
-            {liked ? (
-              <FaHeart className="text-red-500" size={14} />
-            ) : (
-              <FaRegHeart size={14} />
-            )}
-            Like
+            {liked
+              ? <FaHeart className="text-red-500" size={14} />
+              : <FaRegHeart size={14} />
+            }
+            <span>{likesCount}</span>
           </button>
 
           <button
             onClick={handleSave}
             className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-indigo-500 transition-colors"
           >
-            {saved ? (
-              <FaBookmark className="text-indigo-500" size={14} />
-            ) : (
-              <FaRegBookmark size={14} />
-            )}
-            Save
+            {saved
+              ? <FaBookmark className="text-indigo-500" size={14} />
+              : <FaRegBookmark size={14} />
+            }
+            <span>{savesCount}</span>
           </button>
         </div>
 

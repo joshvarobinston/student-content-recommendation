@@ -31,7 +31,6 @@ const ProfilePage = () => {
     <MainLayout>
       <div className="max-w-2xl mx-auto">
 
-        {/* Header */}
         <h1 className="font-heading font-bold text-2xl text-slate-800 mb-6">My Profile</h1>
 
         {/* Profile Card */}
@@ -72,7 +71,7 @@ const ProfilePage = () => {
             </div>
           </div>
 
-          {/* Interests */}
+          {/* Interests Tags */}
           {profile?.interests?.length > 0 && (
             <div className="mb-6">
               <p className="text-xs text-slate-400 mb-2">Your Interests</p>
@@ -92,13 +91,13 @@ const ProfilePage = () => {
           {/* Action Buttons */}
           <div className="flex flex-col gap-3">
             <button
-              onClick={() => navigate('/edit-profile')}
+              onClick={() => navigate('/profile/edit')}          // ✅ Fixed
               className="w-full py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-xl transition-colors text-sm"
             >
               Edit Profile
             </button>
             <button
-              onClick={() => navigate('/change-password')}
+              onClick={() => navigate('/profile/change-password')} // ✅ Fixed
               className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors text-sm"
             >
               Change Password
@@ -119,7 +118,7 @@ const ProfilePage = () => {
             Permanently delete your account and all data.
           </p>
           <button
-            onClick={() => navigate('/delete-account')}
+            onClick={() => navigate('/profile/delete-account')}  // ✅ Fixed
             className="px-6 py-2.5 bg-red-50 hover:bg-red-100 text-red-500 font-semibold rounded-xl transition-colors text-sm border border-red-100"
           >
             Delete Account

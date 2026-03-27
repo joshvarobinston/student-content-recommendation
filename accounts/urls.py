@@ -14,3 +14,7 @@ urlpatterns = [
     path("update-profile/", UpdateProfileAPIView.as_view(), name="update-profile"),
     # ✅ update-interests REMOVED — use /api/interests/save/ instead
 ]
+
+
+
+

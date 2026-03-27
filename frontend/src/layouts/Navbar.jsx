@@ -32,13 +32,12 @@ const Navbar = () => {
     if (!query.trim()) return
 
     try {
-      // Record search query for ML
       await recordSearch({ query: query.trim() })
     } catch (error) {
       // Silently fail — search still works
     }
 
-    navigate(`/search?q=${encodeURIComponent(query.trim())}`)
+    navigate('/search', { state: { query: query.trim() } }) // ✅ Fixed
     setQuery('')
   }
 

@@ -55,6 +55,9 @@ const LoginPage = () => {
         'Invalid email or password'
       toast.error(msg)
     }
+    finally{
+      setLoading(false)
+    }
   }
 
   return (

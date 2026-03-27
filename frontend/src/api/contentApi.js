@@ -1,14 +1,17 @@
 // api/contentApi.js
-// Content feed and search API calls
 
 import axiosInstance from './axiosInstance'
 
-// Get personalized ML recommendations
-// params = { type, sort, date, page }
-export const getFeed = (params) =>
-  axiosInstance.get('/api/content/personalized-recommendations/', { params })
+// ✅ FIXED: params must be wrapped in { params } for GET requests
+// Previously: axiosInstance.get(url, data) → params were ignored
+// Correct:    axiosInstance.get(url, { params: data }) → params sent as query string
+export const getFeed = (data = {}) =>
+  axiosInstance.get('/api/content/personalized-recommendations/', { params: data })
 
-// Search content across all types
-// data = { query: "machine learning" }
+// Search content — POST with body
 export const searchContent = (data) =>
   axiosInstance.post('/api/content/search/', data)
+
+// Force refresh content from external APIs
+export const refreshContent = () =>
+  axiosInstance.post('/api/content/refresh/')

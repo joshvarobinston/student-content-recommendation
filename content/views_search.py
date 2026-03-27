@@ -112,5 +112,5 @@ class ExternalSearchAPIView(APIView):
         # ── 7. Paginate ───────────────────────────────
         paginator = StandardResultsPagination()
         page = paginator.paginate_queryset(contents, request)
-        serializer = ContentItemSerializer(page, many=True)
+        serializer = ContentItemSerializer(page, many=True, context={'request': request})
         return paginator.get_paginated_response(serializer.data)

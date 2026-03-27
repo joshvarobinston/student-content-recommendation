@@ -16,3 +16,5 @@ urlpatterns = [
     path('saved/list/', UserSavedListAPIView.as_view(), name='user-saved-list'),
     path('liked/list/', UserLikedListAPIView.as_view(), name='user-liked-list'),
 ]
+
+

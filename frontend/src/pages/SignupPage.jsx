@@ -1,11 +1,10 @@
 // pages/SignupPage.jsx
-// User registration page
 
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { signup } from '../api/authApi'
-
+import { signup, login } from '../api/authApi'
+import { saveTokens } from '../utils/token'
 
 const SignupPage = () => {
   const navigate = useNavigate()
@@ -19,16 +18,13 @@ const SignupPage = () => {
   })
   const [loading, setLoading] = useState(false)
 
-  // Handle input change
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-  // Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    // Validation
     if (!formData.first_name || !formData.last_name || !formData.email || !formData.password) {
       toast.error('All fields are required')
       return
@@ -44,16 +40,30 @@ const SignupPage = () => {
 
     setLoading(true)
     try {
+      // Step 1: Create account
       await signup({
         first_name: formData.first_name,
         last_name: formData.last_name,
         email: formData.email,
         password: formData.password,
       })
+
+      // ✅ FIXED: Backend returns only { message } on signup — no tokens
+      // So we immediately log the user in to get tokens
+      const loginRes = await login({
+        email: formData.email,
+        password: formData.password,
+      })
+
+      saveTokens(loginRes.data.access, loginRes.data.refresh)
       toast.success('Account created! Please select your interests.')
-      navigate('/login')
+      navigate('/interests')
     } catch (error) {
-      const msg = error.response?.data?.error || error.response?.data?.message || error.response?.data?.email?.[0] || error.response?.data?.password?.[0] || 'Signup failed. Please try again.'
+      const msg =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        error.response?.data?.email?.[0] ||
+        'Signup failed. Please try again.'
       toast.error(msg)
     } finally {
       setLoading(false)
@@ -75,11 +85,9 @@ const SignupPage = () => {
         {/* Card */}
         <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
 
-          {/* Title */}
           <h2 className="font-heading font-bold text-2xl text-white mb-1">Create Account</h2>
           <p className="text-white/50 text-sm mb-6">Join StudentReco and start learning smarter</p>
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
 
             {/* First + Last Name */}
@@ -147,7 +155,7 @@ const SignupPage = () => {
               />
             </div>
 
-            {/* Submit Button */}
+            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
@@ -158,7 +166,6 @@ const SignupPage = () => {
 
           </form>
 
-          {/* Login Link */}
           <p className="text-center text-white/40 text-sm mt-6">
             Already have an account?{' '}
             <Link to="/login" className="text-indigo-400 hover:text-indigo-300 font-medium">

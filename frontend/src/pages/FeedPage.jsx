@@ -1,8 +1,9 @@
 // pages/FeedPage.jsx
-import { useState, useEffect } from 'react'
+
+import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { getFeed } from '../api/contentApi'
+import { getFeed, refreshContent } from '../api/contentApi'
 import MainLayout from '../layouts/MainLayout'
 import VideoCard from '../components/cards/VideoCard'
 import NewsCard from '../components/cards/NewsCard'
@@ -22,32 +23,34 @@ const FeedPage = () => {
   const [totalPages, setTotalPages] = useState(1)
   const [sortBy, setSortBy] = useState('relevant')
   const [dateFilter, setDateFilter] = useState('')
+  const [refreshing, setRefreshing] = useState(false)
 
-  // Fetch feed whenever filters change
-  useEffect(() => {
-    fetchFeed(1)
-    setCurrentPage(1)
-  }, [contentType, sortBy, dateFilter])
-
-  const fetchFeed = async (page) => {
+  // ✅ FIXED: useCallback so fetchFeed is stable and safe in useEffect deps
+  const fetchFeed = useCallback(async (page = 1) => {
     setLoading(true)
     try {
       const params = {
         page,
         sort: sortBy,
-        date: dateFilter,
       }
-      if (contentType !== 'all') params.type = contentType
+      if (dateFilter) params.date = dateFilter
+      if (contentType !== 'all') params.content_type = contentType
 
       const res = await getFeed(params)
-      setContents(res.data.results || res.data)
+      setContents(res.data.results || [])
       setTotalPages(res.data.total_pages || 1)
     } catch (error) {
       toast.error('Failed to load content')
     } finally {
       setLoading(false)
     }
-  }
+  }, [contentType, sortBy, dateFilter])
+
+  // ✅ FIXED: fetchFeed now in dependency array — no stale closure
+  useEffect(() => {
+    setCurrentPage(1)
+    fetchFeed(1)
+  }, [fetchFeed])
 
   const handlePageChange = (page) => {
     setCurrentPage(page)
@@ -55,35 +58,39 @@ const FeedPage = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  // Render correct card based on content type
+  const handleRefresh = async () => {
+    setRefreshing(true)
+    try {
+      await refreshContent()
+      await fetchFeed(1)
+      setCurrentPage(1)
+      toast.success('Feed refreshed!')
+    } catch {
+      toast.error('Failed to refresh')
+    } finally {
+      setRefreshing(false)
+    }
+  }
+
   const renderCard = (content) => {
     switch (content.content_type) {
-      case 'video':
-        return <VideoCard key={content.id} content={content} />
-      case 'news':
-        return <NewsCard key={content.id} content={content} />
-      case 'article':
-        return <ArticleCard key={content.id} content={content} />
-      case 'book':
-        return <BookCard key={content.id} content={content} />
-      default:
-        return <NewsCard key={content.id} content={content} />
+      case 'video':   return <VideoCard   key={content.id} content={content} />
+      case 'news':    return <NewsCard    key={content.id} content={content} />
+      case 'article': return <ArticleCard key={content.id} content={content} />
+      case 'book':    return <BookCard    key={content.id} content={content} />
+      default:        return <NewsCard    key={content.id} content={content} />
     }
   }
 
-  // Page title based on content type
   const getTitle = () => {
     switch (contentType) {
-      case 'video': return '🎥 Videos'
-      case 'news': return '📰 News'
+      case 'video':   return '🎥 Videos'
+      case 'news':    return '📰 News'
       case 'article': return '📝 Articles'
-      case 'book': return '📚 Books'
-      default: return '🏠 Your Feed'
+      case 'book':    return '📚 Books'
+      default:        return '🏠 Your Feed'
     }
   }
-
-  // Check if video or book type for grid layout
-  const isGridLayout = contentType === 'video' || contentType === 'book' || contentType === 'all'
 
   return (
     <MainLayout>
@@ -121,6 +128,15 @@ const FeedPage = () => {
               <option value="month">This Month</option>
             </select>
 
+            {/* Refresh Button */}
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="px-4 py-2 text-sm font-medium bg-indigo-500 text-white rounded-xl hover:bg-indigo-600 disabled:opacity-50 transition-all"
+            >
+              {refreshing ? '⟳ Refreshing...' : '⟳ Refresh'}
+            </button>
+
           </div>
         </div>
 
@@ -131,11 +147,10 @@ const FeedPage = () => {
           <EmptyState
             icon="📭"
             title="No content found"
-            message="Try changing your filters or update your interests."
+            message="Try changing your filters or refresh to load new content."
           />
         ) : (
           <>
-            {/* Grid for videos/books, List for news/articles */}
             <div className={
               contentType === 'news' || contentType === 'article'
                 ? 'flex flex-col gap-4'
@@ -144,7 +159,6 @@ const FeedPage = () => {
               {contents.map((content) => renderCard(content))}
             </div>
 
-            {/* Pagination */}
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}

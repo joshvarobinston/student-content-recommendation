@@ -1,5 +1,4 @@
 // components/cards/BookCard.jsx
-// Book cover style card component
 
 import { useState } from 'react'
 import { FaHeart, FaRegHeart, FaBookmark, FaRegBookmark } from 'react-icons/fa'
@@ -8,14 +7,18 @@ import { formatYear } from '../../utils/formatDate'
 import { toast } from 'react-toastify'
 
 const BookCard = ({ content }) => {
-  const [liked, setLiked] = useState(false)
-  const [saved, setSaved] = useState(false)
+  // ✅ Initialize from backend data
+  const [liked, setLiked] = useState(content.is_liked || false)
+  const [saved, setSaved] = useState(content.is_saved || false)
+  const [likesCount, setLikesCount] = useState(content.likes_count || 0)
+  const [savesCount, setSavesCount] = useState(content.saves_count || 0)
 
   const handleLike = async (e) => {
     e.preventDefault()
     try {
       await toggleLike({ content_item_id: content.id })
       setLiked(!liked)
+      setLikesCount(liked ? likesCount - 1 : likesCount + 1) // ✅
     } catch (error) {
       toast.error('Failed to like content')
     }
@@ -26,6 +29,7 @@ const BookCard = ({ content }) => {
     try {
       await toggleSave({ content_item_id: content.id })
       setSaved(!saved)
+      setSavesCount(saved ? savesCount - 1 : savesCount + 1) // ✅
     } catch (error) {
       toast.error('Failed to save content')
     }
@@ -59,8 +63,6 @@ const BookCard = ({ content }) => {
             <span className="text-5xl">📚</span>
           </div>
         )}
-
-        {/* Book badge */}
         <span className="absolute top-2 left-2 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded-md">
           BOOK
         </span>
@@ -91,28 +93,29 @@ const BookCard = ({ content }) => {
         {/* Actions */}
         <div className="flex items-center justify-between pt-2 border-t border-slate-100">
           <div className="flex items-center gap-3">
+
+            {/* ✅ Like with count */}
             <button
               onClick={handleLike}
               className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-red-500 transition-colors"
             >
-              {liked ? (
-                <FaHeart className="text-red-500" size={13} />
-              ) : (
-                <FaRegHeart size={13} />
-              )}
-              Like
+              {liked
+                ? <FaHeart className="text-red-500" size={13} />
+                : <FaRegHeart size={13} />
+              }
+              <span>{likesCount}</span>
             </button>
 
+            {/* ✅ Save with count */}
             <button
               onClick={handleSave}
               className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-indigo-500 transition-colors"
             >
-              {saved ? (
-                <FaBookmark className="text-indigo-500" size={13} />
-              ) : (
-                <FaRegBookmark size={13} />
-              )}
-              Save
+              {saved
+                ? <FaBookmark className="text-indigo-500" size={13} />
+                : <FaRegBookmark size={13} />
+              }
+              <span>{savesCount}</span>
             </button>
           </div>
 

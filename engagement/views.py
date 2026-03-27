@@ -197,7 +197,7 @@ class UserSavedListAPIView(APIView):
 
         contents = [save.content_item for save in saves]
 
-        serializer = ContentItemSerializer(contents, many=True)
+        serializer = ContentItemSerializer(contents, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 class UserLikedListAPIView(APIView):
@@ -214,5 +214,5 @@ class UserLikedListAPIView(APIView):
 
         contents = [like.content_item for like in likes]
 
-        serializer = ContentItemSerializer(contents, many=True)
+        serializer = ContentItemSerializer(contents, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)

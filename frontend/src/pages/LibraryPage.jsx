@@ -39,7 +39,6 @@ const LibraryPage = () => {
       toast.error('Folder name is required')
       return
     }
-
     setCreating(true)
     try {
       const res = await createFolder({
@@ -60,7 +59,6 @@ const LibraryPage = () => {
 
   const handleDelete = async (folderId) => {
     if (!window.confirm('Delete this folder and all its items?')) return
-
     setDeletingId(folderId)
     try {
       await deleteFolder(folderId)
@@ -94,7 +92,7 @@ const LibraryPage = () => {
         {/* Quick Links */}
         <div className="grid grid-cols-2 gap-4 mb-8">
           <button
-            onClick={() => navigate('/saved-items')}
+            onClick={() => navigate('/saved')}   // ✅ Fixed
             className="bg-white border border-slate-100 rounded-2xl p-4 flex items-center gap-3 hover:border-indigo-200 hover:shadow-sm transition-all text-left"
           >
             <span className="text-2xl">🔖</span>
@@ -104,7 +102,7 @@ const LibraryPage = () => {
             </div>
           </button>
           <button
-            onClick={() => navigate('/liked-items')}
+            onClick={() => navigate('/liked')}   // ✅ Fixed
             className="bg-white border border-slate-100 rounded-2xl p-4 flex items-center gap-3 hover:border-indigo-200 hover:shadow-sm transition-all text-left"
           >
             <span className="text-2xl">❤️</span>
@@ -121,11 +119,7 @@ const LibraryPage = () => {
         {loading ? (
           <Loader />
         ) : folders.length === 0 ? (
-          <EmptyState
-            icon="📁"
-            title="No folders yet"
-            message="Create your first study folder to organize your content."
-          />
+          <EmptyState icon="📁" title="No folders yet" message="Create your first study folder to organize your content." />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {folders.map((folder) => (
@@ -133,7 +127,6 @@ const LibraryPage = () => {
                 key={folder.id}
                 className="bg-white border border-slate-100 rounded-2xl p-5 hover:shadow-md hover:border-indigo-100 transition-all"
               >
-                {/* Folder Icon + Name */}
                 <div
                   className="cursor-pointer"
                   onClick={() => navigate(`/library/${folder.id}`)}
@@ -154,7 +147,6 @@ const LibraryPage = () => {
                   </p>
                 </div>
 
-                {/* Delete Button */}
                 <div className="flex justify-end mt-4 pt-3 border-t border-slate-100">
                   <button
                     onClick={() => handleDelete(folder.id)}
@@ -172,11 +164,7 @@ const LibraryPage = () => {
       </div>
 
       {/* Create Folder Modal */}
-      <Modal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title="Create New Folder"
-      >
+      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Create New Folder">
         <div className="flex flex-col gap-4">
           <div>
             <label className="text-sm font-medium text-slate-600 mb-1.5 block">Folder Name</label>

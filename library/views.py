@@ -10,7 +10,7 @@ from .serializers import LibraryFolderSerializer, LibraryItemSerializer
 from content.models import ContentItem
 
 
-# ✅ 1) CREATE FOLDER
+# ✅ 1) CREATE FOLDER this folder is used to
 class CreateFolderAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -86,7 +86,7 @@ class AddItemToFolderAPIView(APIView):
         return Response(
             {
                 "message": "Item added successfully",
-                "item": LibraryItemSerializer(obj).data
+                "item": LibraryItemSerializer(obj, context={'request': request}).data
             },
             status=status.HTTP_201_CREATED
         )
@@ -103,7 +103,7 @@ class FolderItemsAPIView(APIView):
             return Response({"error": "Folder not found"}, status=status.HTTP_404_NOT_FOUND)
 
         items = LibraryItem.objects.filter(folder=folder).order_by("-added_at")
-        serializer = LibraryItemSerializer(items, many=True)
+        serializer = LibraryItemSerializer(items, many=True, context={'request': request})
 
         # ✅ Return folder name too so frontend can show it
         return Response({

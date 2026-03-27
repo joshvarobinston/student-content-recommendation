@@ -1,5 +1,4 @@
 // components/cards/NewsCard.jsx
-// Medium style news card component
 
 import { useState } from 'react'
 import { FaHeart, FaRegHeart, FaBookmark, FaRegBookmark } from 'react-icons/fa'
@@ -8,32 +7,34 @@ import { formatDate } from '../../utils/formatDate'
 import { toast } from 'react-toastify'
 
 const NewsCard = ({ content }) => {
-  const [liked, setLiked] = useState(false)
-  const [saved, setSaved] = useState(false)
+  // ✅ Initialize from backend data
+  const [liked, setLiked] = useState(content.is_liked || false)
+  const [saved, setSaved] = useState(content.is_saved || false)
+  const [likesCount, setLikesCount] = useState(content.likes_count || 0)
+  const [savesCount, setSavesCount] = useState(content.saves_count || 0)
 
-  // Handle like toggle
   const handleLike = async (e) => {
     e.preventDefault()
     try {
       await toggleLike({ content_item_id: content.id })
       setLiked(!liked)
+      setLikesCount(liked ? likesCount - 1 : likesCount + 1) // ✅
     } catch (error) {
       toast.error('Failed to like content')
     }
   }
 
-  // Handle save toggle
   const handleSave = async (e) => {
     e.preventDefault()
     try {
       await toggleSave({ content_item_id: content.id })
       setSaved(!saved)
+      setSavesCount(saved ? savesCount - 1 : savesCount + 1) // ✅
     } catch (error) {
       toast.error('Failed to save content')
     }
   }
 
-  // Handle view recording
   const handleView = async () => {
     try {
       await recordView({ content_item_id: content.id, view_duration: 0 })
@@ -46,7 +47,7 @@ const NewsCard = ({ content }) => {
   return (
     <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-md transition-all duration-200 flex gap-4 p-4">
 
-      {/* Thumbnail (left side) */}
+      {/* Thumbnail */}
       <div
         className="flex-shrink-0 w-28 h-24 rounded-xl overflow-hidden bg-slate-100 cursor-pointer"
         onClick={handleView}
@@ -64,7 +65,7 @@ const NewsCard = ({ content }) => {
         )}
       </div>
 
-      {/* Content (right side) */}
+      {/* Content */}
       <div className="flex flex-col flex-1 min-w-0">
 
         {/* Badge + Date */}
@@ -93,26 +94,29 @@ const NewsCard = ({ content }) => {
           <span className="text-xs font-medium text-slate-500">{content.source_name}</span>
 
           <div className="flex items-center gap-3">
+
+            {/* ✅ Like with count */}
             <button
               onClick={handleLike}
-              className="text-slate-400 hover:text-red-500 transition-colors"
+              className="flex items-center gap-1 text-slate-400 hover:text-red-500 transition-colors"
             >
-              {liked ? (
-                <FaHeart className="text-red-500" size={13} />
-              ) : (
-                <FaRegHeart size={13} />
-              )}
+              {liked
+                ? <FaHeart className="text-red-500" size={13} />
+                : <FaRegHeart size={13} />
+              }
+              <span className="text-xs">{likesCount}</span>
             </button>
 
+            {/* ✅ Save with count */}
             <button
               onClick={handleSave}
-              className="text-slate-400 hover:text-indigo-500 transition-colors"
+              className="flex items-center gap-1 text-slate-400 hover:text-indigo-500 transition-colors"
             >
-              {saved ? (
-                <FaBookmark className="text-indigo-500" size={13} />
-              ) : (
-                <FaRegBookmark size={13} />
-              )}
+              {saved
+                ? <FaBookmark className="text-indigo-500" size={13} />
+                : <FaRegBookmark size={13} />
+              }
+              <span className="text-xs">{savesCount}</span>
             </button>
 
             <button

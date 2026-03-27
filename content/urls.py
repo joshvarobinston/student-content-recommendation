@@ -16,3 +16,5 @@ urlpatterns = [
     path('search/', ExternalSearchAPIView.as_view(), name='external-search'),
     path('refresh/', RefreshContentAPIView.as_view(), name='refresh-content'),  # ✅ NEW
 ]
+
+

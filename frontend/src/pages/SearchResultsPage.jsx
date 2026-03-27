@@ -1,9 +1,9 @@
 // pages/SearchResultsPage.jsx
+
 import { useState, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { searchContent } from '../api/contentApi'
-import { recordSearch } from '../api/engagementApi'
 import MainLayout from '../layouts/MainLayout'
 import VideoCard from '../components/cards/VideoCard'
 import NewsCard from '../components/cards/NewsCard'
@@ -13,14 +13,13 @@ import Loader from '../components/common/Loader'
 import EmptyState from '../components/common/EmptyState'
 
 const SearchResultsPage = () => {
-  const [searchParams] = useSearchParams()
-  const query = searchParams.get('q') || ''
+  const location = useLocation()
+  const query = location.state?.query || ''
 
   const [results, setResults] = useState([])
   const [loading, setLoading] = useState(false)
   const [activeType, setActiveType] = useState('all')
 
-  // Search whenever query changes
   useEffect(() => {
     if (query.trim()) {
       handleSearch(query)
@@ -30,13 +29,8 @@ const SearchResultsPage = () => {
   const handleSearch = async (q) => {
     setLoading(true)
     try {
-      // Record search for ML
-      await recordSearch({ query: q })
-    } catch (error) {
-      // Silently fail
-    }
-
-    try {
+      // ✅ FIXED: recordSearch removed here — Navbar already calls it before navigating
+      // Calling it here too was recording every search TWICE in the DB
       const res = await searchContent({ query: q })
       setResults(res.data.results || res.data)
     } catch (error) {
@@ -46,36 +40,32 @@ const SearchResultsPage = () => {
     }
   }
 
-  // Filter by content type
   const filteredResults = activeType === 'all'
     ? results
     : results.filter((r) => r.content_type === activeType)
 
-  // Render correct card
   const renderCard = (content) => {
     switch (content.content_type) {
-      case 'video': return <VideoCard key={content.id} content={content} />
-      case 'news': return <NewsCard key={content.id} content={content} />
+      case 'video':   return <VideoCard   key={content.id} content={content} />
+      case 'news':    return <NewsCard    key={content.id} content={content} />
       case 'article': return <ArticleCard key={content.id} content={content} />
-      case 'book': return <BookCard key={content.id} content={content} />
-      default: return <NewsCard key={content.id} content={content} />
+      case 'book':    return <BookCard    key={content.id} content={content} />
+      default:        return <NewsCard    key={content.id} content={content} />
     }
   }
 
-  // Type filter tabs
   const tabs = [
-    { label: 'All', value: 'all' },
-    { label: '🎥 Videos', value: 'video' },
-    { label: '📰 News', value: 'news' },
+    { label: 'All',         value: 'all' },
+    { label: '🎥 Videos',   value: 'video' },
+    { label: '📰 News',     value: 'news' },
     { label: '📝 Articles', value: 'article' },
-    { label: '📚 Books', value: 'book' },
+    { label: '📚 Books',    value: 'book' },
   ]
 
   return (
     <MainLayout>
       <div className="max-w-6xl mx-auto">
 
-        {/* Header */}
         <div className="mb-6">
           <h1 className="font-heading font-bold text-2xl text-slate-800 mb-1">
             Search Results
@@ -89,7 +79,6 @@ const SearchResultsPage = () => {
           )}
         </div>
 
-        {/* Type Filter Tabs */}
         <div className="flex items-center gap-2 mb-6 flex-wrap">
           {tabs.map((tab) => (
             <button
@@ -106,21 +95,12 @@ const SearchResultsPage = () => {
           ))}
         </div>
 
-        {/* Results */}
         {!query ? (
-          <EmptyState
-            icon="🔍"
-            title="Search for something"
-            message="Type in the search bar above to find content."
-          />
+          <EmptyState icon="🔍" title="Search for something" message="Type in the search bar above to find content." />
         ) : loading ? (
           <Loader />
         ) : filteredResults.length === 0 ? (
-          <EmptyState
-            icon="😕"
-            title="No results found"
-            message={`No content found for "${query}". Try different keywords.`}
-          />
+          <EmptyState icon="😕" title="No results found" message={`No content found for "${query}". Try different keywords.`} />
         ) : (
           <div className={
             activeType === 'news' || activeType === 'article'

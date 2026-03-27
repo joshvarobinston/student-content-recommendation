@@ -5,10 +5,8 @@ import { createContext, useContext, useState, useEffect } from 'react'
 import { getProfile } from '../api/accountApi'
 import { isLoggedIn, clearTokens } from '../utils/token'
 
-// Create auth context
 const AuthContext = createContext()
 
-// Auth provider component
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -21,33 +19,46 @@ export const AuthProvider = ({ children }) => {
           const res = await getProfile()
           setUser(res.data)
         } catch (error) {
-          // Token invalid or expired — clear and redirect
           clearTokens()
           setUser(null)
         }
       }
       setLoading(false)
     }
-
     loadUser()
   }, [])
 
-  // Logout function — clear tokens and reset user
+  // Logout function
   const logout = () => {
     clearTokens()
     setUser(null)
     window.location.href = '/login'
   }
 
+  // ✅ Refetch user profile (after update)
+  const refetchUser = async () => {
+    try {
+      const res = await getProfile()
+      setUser(res.data)
+    } catch (error) {
+      clearTokens()
+      setUser(null)
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ user, setUser, logout, loading }}>
-      {/* Show nothing while loading user */}
+    <AuthContext.Provider value={{ 
+      user, 
+      setUser, 
+      logout, 
+      loading,
+      refetchUser  // ✅ Added
+    }}>
       {!loading && children}
     </AuthContext.Provider>
   )
 }
 
-// Custom hook to use auth context
 export const useAuth = () => {
   const context = useContext(AuthContext)
   if (!context) {
