@@ -5,7 +5,7 @@ from rest_framework.response import Response
 
 
 class StandardResultsPagination(PageNumberPagination):
-    page_size = 10
+    page_size = 12
     page_size_query_param = "page_size"
     max_page_size = 50
 
@@ -18,3 +18,5 @@ class StandardResultsPagination(PageNumberPagination):
             "previous": self.get_previous_link(),
             "results": data,
         })
+    
+    
