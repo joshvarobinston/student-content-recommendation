@@ -1,14 +1,12 @@
-// components/cards/VideoCard.jsx
-// YouTube style video card component
-
 import { useState } from 'react'
-import { FaHeart, FaRegHeart, FaBookmark, FaRegBookmark } from 'react-icons/fa'
-import { toggleLike, toggleSave, recordView } from '../../api/engagementApi'
-import { formatDate } from '../../utils/formatDate'
+import { FaBookmark, FaHeart, FaRegBookmark, FaRegHeart } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 
+import { toggleLike, toggleSave, recordView } from '../../api/engagementApi'
+import { formatDate } from '../../utils/formatDate'
+import CardThumbnail from './CardThumbnail'
+
 const VideoCard = ({ content }) => {
-  // ✅ Initialize from backend data
   const [liked, setLiked] = useState(content.is_liked || false)
   const [saved, setSaved] = useState(content.is_saved || false)
   const [likesCount, setLikesCount] = useState(content.likes_count || 0)
@@ -20,7 +18,7 @@ const VideoCard = ({ content }) => {
       await toggleLike({ content_item_id: content.id })
       setLiked(!liked)
       setLikesCount(liked ? likesCount - 1 : likesCount + 1)
-    } catch (error) {
+    } catch {
       toast.error('Failed to like content')
     }
   }
@@ -31,7 +29,7 @@ const VideoCard = ({ content }) => {
       await toggleSave({ content_item_id: content.id })
       setSaved(!saved)
       setSavesCount(saved ? savesCount - 1 : savesCount + 1)
-    } catch (error) {
+    } catch {
       toast.error('Failed to save content')
     }
   }
@@ -39,63 +37,50 @@ const VideoCard = ({ content }) => {
   const handleView = async () => {
     try {
       await recordView({ content_item_id: content.id, view_duration: 0 })
-      window.open(content.source_url, '_blank')
-    } catch (error) {
+    } finally {
       window.open(content.source_url, '_blank')
     }
   }
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-1 transition-all duration-200">
-
-      {/* Thumbnail */}
-      <div
-        className="relative w-full h-44 bg-slate-100 cursor-pointer overflow-hidden"
-        onClick={handleView}
-      >
-        {content.thumbnail_url ? (
-          <img
-            src={content.thumbnail_url}
-            alt={content.title}
-            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-indigo-50">
-            <span className="text-4xl">🎥</span>
-          </div>
-        )}
-        <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-md">
+    <article className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-1 transition-all duration-200">
+      <div className="relative">
+        <CardThumbnail
+          src={content.thumbnail_url}
+          alt={content.title}
+          onClick={handleView}
+          className="w-full h-44 bg-slate-100 cursor-pointer overflow-hidden"
+          imageClassName="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+          fallback={
+            <div className="w-full h-full flex items-center justify-center bg-indigo-50 text-indigo-600 font-semibold tracking-[0.2em] text-sm">
+              VIDEO
+            </div>
+          }
+        />
+        <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded-md">
           VIDEO
         </span>
       </div>
 
-      {/* Content */}
       <div className="p-4">
-
-        {/* Title */}
         <h3
-          className="font-heading font-semibold text-slate-800 text-sm leading-snug mb-2 line-clamp-2 cursor-pointer hover:text-indigo-600 transition-colors"
+          className="font-heading font-semibold text-slate-800 text-sm leading-snug mb-2 line-clamp-2 cursor-pointer hover:text-indigo-600 transition-colors min-h-[2.75rem]"
           onClick={handleView}
         >
           {content.title}
         </h3>
 
-        {/* Source + Date */}
-        <div className="flex items-center justify-between text-xs text-slate-400 mb-3">
-          <span className="font-medium text-slate-500">{content.source_name}</span>
-          <span>{formatDate(content.published_date)}</span>
+        <div className="flex items-center justify-between text-xs text-slate-400 mb-3 gap-3">
+          <span className="font-medium text-slate-500 truncate">{content.source_name}</span>
+          <span className="shrink-0">{formatDate(content.published_date)}</span>
         </div>
 
-        {/* ✅ Like + Save with counts */}
         <div className="flex items-center gap-3 pt-2 border-t border-slate-100">
           <button
             onClick={handleLike}
             className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-red-500 transition-colors"
           >
-            {liked
-              ? <FaHeart className="text-red-500" size={14} />
-              : <FaRegHeart size={14} />
-            }
+            {liked ? <FaHeart className="text-red-500" size={14} /> : <FaRegHeart size={14} />}
             <span>{likesCount}</span>
           </button>
 
@@ -103,16 +88,12 @@ const VideoCard = ({ content }) => {
             onClick={handleSave}
             className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-indigo-500 transition-colors"
           >
-            {saved
-              ? <FaBookmark className="text-indigo-500" size={14} />
-              : <FaRegBookmark size={14} />
-            }
+            {saved ? <FaBookmark className="text-indigo-500" size={14} /> : <FaRegBookmark size={14} />}
             <span>{savesCount}</span>
           </button>
         </div>
-
       </div>
-    </div>
+    </article>
   )
 }
 

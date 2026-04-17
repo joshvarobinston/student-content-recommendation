@@ -17,7 +17,12 @@ def build_content_text(content_item):
     if hasattr(content_item, "interest_domain") and content_item.interest_domain:
         parts.append(str(content_item.interest_domain))
 
-    # Combine all parts into one text
-    combined_text = " ".join(parts)
+    content_tags = getattr(content_item, "content_tags", None)
+    if content_tags is not None:
+        parts.extend(
+            content_tag.tag.name
+            for content_tag in content_tags.select_related("tag").all()
+        )
 
+    combined_text = " ".join(parts)
     return combined_text

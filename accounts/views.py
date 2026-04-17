@@ -12,7 +12,7 @@ from .serializers import (ProfileSerializer,
 from content.serializers import ContentItemSerializer
 
 from interests.models import InterestDomain, UserInterest
-from engagement.models import UserSave, UserLike
+from engagement.services import get_liked_content_queryset, get_saved_content_queryset
 
 from django.contrib.auth.hashers import check_password
 
@@ -81,12 +81,7 @@ class SavedItemsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user = request.user
-
-        saved_items = UserSave.objects.filter(user=user).select_related("content_item")
-
-        contents = [item.content_item for item in saved_items]
-
+        contents = get_saved_content_queryset(request.user)
         serializer = ContentItemSerializer(contents, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -98,12 +93,7 @@ class LikedItemsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user = request.user
-
-        liked_items = UserLike.objects.filter(user=user).select_related("content_item")
-
-        contents = [item.content_item for item in liked_items]
-
+        contents = get_liked_content_queryset(request.user)
         serializer = ContentItemSerializer(contents, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 

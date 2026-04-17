@@ -19,7 +19,9 @@ class UserProfile(models.Model):
     )
     bio = models.TextField(blank=True)
     avatar_url = models.URLField(blank=True)
+    # Deprecated in favor of settings_app.UserSettings.language.
     language = models.CharField(max_length=10, default='en')
+    is_email_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

@@ -27,3 +27,7 @@ class LibraryItemSerializer(serializers.ModelSerializer):
         model = LibraryItem
         fields = ["id", "content_item", "added_at"]
         read_only_fields = ["id", "added_at"]
+
+
+class AddLibraryItemSerializer(serializers.Serializer):
+    content_item_id = serializers.IntegerField()

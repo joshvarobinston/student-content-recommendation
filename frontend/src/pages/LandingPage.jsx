@@ -53,10 +53,7 @@ const LandingPage = () => {
       <section className="relative flex flex-col items-center text-center px-6 pt-24 pb-20">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
 
-        <div className="relative mb-6 inline-flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-semibold px-4 py-2 rounded-full">
-          <span className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse" />
-          AI-Powered Content Recommendations
-        </div>
+        env
 
         <h1 className="relative font-heading font-extrabold text-5xl md:text-7xl leading-tight mb-6 max-w-4xl">
           Discover Content

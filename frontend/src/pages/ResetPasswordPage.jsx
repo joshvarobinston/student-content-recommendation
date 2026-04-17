@@ -1,41 +1,38 @@
-// pages/ResetPasswordPage.jsx
-import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
+
 import { resetPassword } from '../api/authApi'
+import { clearPendingOtp, getPendingOtp } from '../utils/token'
 
 const ResetPasswordPage = () => {
   const navigate = useNavigate()
-
   const [formData, setFormData] = useState({
     email: '',
-    token: '',
+    otp: '',
     new_password: '',
     confirm_password: '',
   })
   const [loading, setLoading] = useState(false)
 
-  // ✅ Pre-fill email and token from localStorage
   useEffect(() => {
-    const savedEmail = localStorage.getItem('reset_email')
-    const savedToken = localStorage.getItem('reset_token')
-    if (savedEmail || savedToken) {
+    const pendingOtp = getPendingOtp()
+    if (pendingOtp?.purpose === 'password_reset') {
       setFormData((prev) => ({
         ...prev,
-        email: savedEmail || '',
-        token: savedToken || '',
+        email: pendingOtp.email || '',
       }))
     }
   }, [])
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if (!formData.email || !formData.token || !formData.new_password) {
+    if (!formData.email || !formData.otp || !formData.new_password) {
       toast.error('All fields are required')
       return
     }
@@ -52,21 +49,18 @@ const ResetPasswordPage = () => {
     try {
       await resetPassword({
         email: formData.email,
-        token: formData.token,
+        otp: formData.otp,
         new_password: formData.new_password,
       })
 
-      // ✅ Clear reset data from localStorage
-      localStorage.removeItem('reset_token')
-      localStorage.removeItem('reset_email')
-
+      clearPendingOtp()
       toast.success('Password reset successful! Please login.')
       navigate('/login')
     } catch (error) {
       const msg =
         error.response?.data?.error ||
         error.response?.data?.message ||
-        'Invalid or expired token. Please try again.'
+        'Invalid or expired OTP. Please try again.'
       toast.error(msg)
     } finally {
       setLoading(false)
@@ -76,8 +70,6 @@ const ResetPasswordPage = () => {
   return (
     <div className="min-h-screen bg-[#0F172A] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-
-        {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-8">
           <div className="w-9 h-9 rounded-xl bg-indigo-500 flex items-center justify-center font-bold text-white">
             S
@@ -85,17 +77,13 @@ const ResetPasswordPage = () => {
           <span className="font-heading font-bold text-2xl text-white">StudentReco</span>
         </div>
 
-        {/* Card */}
         <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
-
           <h2 className="font-heading font-bold text-2xl text-white mb-1">Reset Password</h2>
           <p className="text-white/50 text-sm mb-6">
-            Enter your reset token and new password
+            Enter your OTP and new password
           </p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-
-            {/* Email */}
             <div>
               <label className="text-xs font-medium text-white/60 mb-1.5 block">Email</label>
               <input
@@ -108,20 +96,18 @@ const ResetPasswordPage = () => {
               />
             </div>
 
-            {/* Reset Token */}
             <div>
-              <label className="text-xs font-medium text-white/60 mb-1.5 block">Reset Token</label>
+              <label className="text-xs font-medium text-white/60 mb-1.5 block">OTP Code</label>
               <input
                 type="text"
-                name="token"
-                value={formData.token}
+                name="otp"
+                value={formData.otp}
                 onChange={handleChange}
-                placeholder="Paste your reset token"
+                placeholder="Enter the 6-digit OTP"
                 className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
               />
             </div>
 
-            {/* New Password */}
             <div>
               <label className="text-xs font-medium text-white/60 mb-1.5 block">New Password</label>
               <input
@@ -134,7 +120,6 @@ const ResetPasswordPage = () => {
               />
             </div>
 
-            {/* Confirm Password */}
             <div>
               <label className="text-xs font-medium text-white/60 mb-1.5 block">Confirm Password</label>
               <input
@@ -147,7 +132,6 @@ const ResetPasswordPage = () => {
               />
             </div>
 
-            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
@@ -155,7 +139,6 @@ const ResetPasswordPage = () => {
             >
               {loading ? 'Resetting...' : 'Reset Password'}
             </button>
-
           </form>
 
           <p className="text-center text-white/40 text-sm mt-6">
@@ -164,7 +147,6 @@ const ResetPasswordPage = () => {
               Login
             </Link>
           </p>
-
         </div>
       </div>
     </div>

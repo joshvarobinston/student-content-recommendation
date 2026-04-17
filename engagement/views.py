@@ -8,10 +8,17 @@ from .models import UserView, UserLike, UserSave, UserSearch
 from .serializers import (
     UserViewCreateSerializer,
     UserLikeCreateSerializer,
+    UserSaveCreateSerializer,
     UserSearchCreateSerializer,
 )
 from content.models import ContentItem
 from content.serializers import ContentItemSerializer
+from .services import (
+    get_liked_content_queryset,
+    get_saved_content_queryset,
+    record_search_if_allowed,
+    record_view_if_allowed,
+)
 
 
 
@@ -37,11 +44,7 @@ class UserViewCreateAPIView(APIView):
                     status=status.HTTP_404_NOT_FOUND
                 )
 
-            UserView.objects.create(
-                user=request.user,
-                content_item=content,
-                view_duration=duration
-            )
+            record_view_if_allowed(request.user, content, duration)
 
             return Response(
                 {"message": "View recorded"},
@@ -115,13 +118,11 @@ class UserSaveToggleAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        content_id = request.data.get("content_item_id")
+        serializer = UserSaveCreateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        if not content_id:
-            return Response(
-                {"error": "content_item_id is required"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        content_id = serializer.validated_data["content_item_id"]
 
         try:
             content = ContentItem.objects.get(id=content_id)
@@ -170,10 +171,7 @@ class UserSearchCreateAPIView(APIView):
         serializer = UserSearchCreateSerializer(data=request.data)
 
         if serializer.is_valid():
-            UserSearch.objects.create(
-                user=request.user,
-                query=serializer.validated_data["query"]
-            )
+            record_search_if_allowed(request.user, serializer.validated_data["query"])
 
             return Response(
                 {"message": "Search query recorded"},
@@ -191,12 +189,7 @@ class UserSavedListAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        saves = UserSave.objects.filter(
-            user=request.user
-        ).select_related("content_item")
-
-        contents = [save.content_item for save in saves]
-
+        contents = get_saved_content_queryset(request.user)
         serializer = ContentItemSerializer(contents, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -208,11 +201,6 @@ class UserLikedListAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        likes = UserLike.objects.filter(
-            user=request.user
-        ).select_related("content_item")
-
-        contents = [like.content_item for like in likes]
-
+        contents = get_liked_content_queryset(request.user)
         serializer = ContentItemSerializer(contents, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)

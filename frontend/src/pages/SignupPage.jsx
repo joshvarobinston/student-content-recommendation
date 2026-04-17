@@ -1,14 +1,12 @@
-// pages/SignupPage.jsx
-
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { signup, login } from '../api/authApi'
-import { saveTokens } from '../utils/token'
+
+import { login, signup } from '../api/authApi'
+import { savePendingOtp, saveTokens } from '../utils/token'
 
 const SignupPage = () => {
   const navigate = useNavigate()
-
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -19,7 +17,7 @@ const SignupPage = () => {
   const [loading, setLoading] = useState(false)
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
   const handleSubmit = async (e) => {
@@ -40,7 +38,6 @@ const SignupPage = () => {
 
     setLoading(true)
     try {
-      // Step 1: Create account
       await signup({
         first_name: formData.first_name,
         last_name: formData.last_name,
@@ -48,12 +45,20 @@ const SignupPage = () => {
         password: formData.password,
       })
 
-      // ✅ FIXED: Backend returns only { message } on signup — no tokens
-      // So we immediately log the user in to get tokens
       const loginRes = await login({
         email: formData.email,
         password: formData.password,
       })
+
+      if (loginRes.data.requires_otp) {
+        savePendingOtp({
+          email: formData.email,
+          purpose: loginRes.data.purpose,
+        })
+        toast.success('Account created. Verify the OTP sent to your email.')
+        navigate('/verify-otp')
+        return
+      }
 
       saveTokens(loginRes.data.access, loginRes.data.refresh)
       toast.success('Account created! Please select your interests.')
@@ -63,6 +68,7 @@ const SignupPage = () => {
         error.response?.data?.error ||
         error.response?.data?.message ||
         error.response?.data?.email?.[0] ||
+        error.response?.data?.password?.[0] ||
         'Signup failed. Please try again.'
       toast.error(msg)
     } finally {
@@ -73,8 +79,6 @@ const SignupPage = () => {
   return (
     <div className="min-h-screen bg-[#0F172A] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-
-        {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-8">
           <div className="w-9 h-9 rounded-xl bg-indigo-500 flex items-center justify-center font-bold text-white">
             S
@@ -82,15 +86,11 @@ const SignupPage = () => {
           <span className="font-heading font-bold text-2xl text-white">StudentReco</span>
         </div>
 
-        {/* Card */}
         <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
-
           <h2 className="font-heading font-bold text-2xl text-white mb-1">Create Account</h2>
           <p className="text-white/50 text-sm mb-6">Join StudentReco and start learning smarter</p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-
-            {/* First + Last Name */}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs font-medium text-white/60 mb-1.5 block">First Name</label>
@@ -116,7 +116,6 @@ const SignupPage = () => {
               </div>
             </div>
 
-            {/* Email */}
             <div>
               <label className="text-xs font-medium text-white/60 mb-1.5 block">Email</label>
               <input
@@ -129,7 +128,6 @@ const SignupPage = () => {
               />
             </div>
 
-            {/* Password */}
             <div>
               <label className="text-xs font-medium text-white/60 mb-1.5 block">Password</label>
               <input
@@ -142,7 +140,6 @@ const SignupPage = () => {
               />
             </div>
 
-            {/* Confirm Password */}
             <div>
               <label className="text-xs font-medium text-white/60 mb-1.5 block">Confirm Password</label>
               <input
@@ -155,7 +152,6 @@ const SignupPage = () => {
               />
             </div>
 
-            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
@@ -163,7 +159,6 @@ const SignupPage = () => {
             >
               {loading ? 'Creating Account...' : 'Create Account'}
             </button>
-
           </form>
 
           <p className="text-center text-white/40 text-sm mt-6">
@@ -172,7 +167,6 @@ const SignupPage = () => {
               Login
             </Link>
           </p>
-
         </div>
       </div>
     </div>

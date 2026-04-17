@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from .models import LibraryFolder, LibraryItem
-from .serializers import LibraryFolderSerializer, LibraryItemSerializer
+from .serializers import AddLibraryItemSerializer, LibraryFolderSerializer, LibraryItemSerializer
 from content.models import ContentItem
 
 
@@ -60,12 +60,11 @@ class AddItemToFolderAPIView(APIView):
         except LibraryFolder.DoesNotExist:
             return Response({"error": "Folder not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        content_id = request.data.get("content_item_id")
-        if not content_id:
-            return Response(
-                {"error": "content_item_id is required"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        serializer = AddLibraryItemSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        content_id = serializer.validated_data["content_item_id"]
 
         try:
             content_item = ContentItem.objects.get(id=content_id)

@@ -1,13 +1,12 @@
-// components/cards/BookCard.jsx
-
 import { useState } from 'react'
-import { FaHeart, FaRegHeart, FaBookmark, FaRegBookmark } from 'react-icons/fa'
-import { toggleLike, toggleSave, recordView } from '../../api/engagementApi'
-import { formatYear } from '../../utils/formatDate'
+import { FaBookmark, FaHeart, FaRegBookmark, FaRegHeart } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 
+import { toggleLike, toggleSave, recordView } from '../../api/engagementApi'
+import { formatYear } from '../../utils/formatDate'
+import CardThumbnail from './CardThumbnail'
+
 const BookCard = ({ content }) => {
-  // ✅ Initialize from backend data
   const [liked, setLiked] = useState(content.is_liked || false)
   const [saved, setSaved] = useState(content.is_saved || false)
   const [likesCount, setLikesCount] = useState(content.likes_count || 0)
@@ -18,8 +17,8 @@ const BookCard = ({ content }) => {
     try {
       await toggleLike({ content_item_id: content.id })
       setLiked(!liked)
-      setLikesCount(liked ? likesCount - 1 : likesCount + 1) // ✅
-    } catch (error) {
+      setLikesCount(liked ? likesCount - 1 : likesCount + 1)
+    } catch {
       toast.error('Failed to like content')
     }
   }
@@ -29,8 +28,8 @@ const BookCard = ({ content }) => {
     try {
       await toggleSave({ content_item_id: content.id })
       setSaved(!saved)
-      setSavesCount(saved ? savesCount - 1 : savesCount + 1) // ✅
-    } catch (error) {
+      setSavesCount(saved ? savesCount - 1 : savesCount + 1)
+    } catch {
       toast.error('Failed to save content')
     }
   }
@@ -38,97 +37,67 @@ const BookCard = ({ content }) => {
   const handleView = async () => {
     try {
       await recordView({ content_item_id: content.id, view_duration: 0 })
-      window.open(content.source_url, '_blank')
-    } catch (error) {
+    } finally {
       window.open(content.source_url, '_blank')
     }
   }
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-1 transition-all duration-200">
-
-      {/* Book Cover */}
-      <div
-        className="relative w-full h-48 bg-gradient-to-br from-indigo-100 to-purple-100 cursor-pointer overflow-hidden"
-        onClick={handleView}
-      >
-        {content.thumbnail_url ? (
-          <img
-            src={content.thumbnail_url}
-            alt={content.title}
-            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <span className="text-5xl">📚</span>
-          </div>
-        )}
-        <span className="absolute top-2 left-2 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded-md">
+    <article className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-1 transition-all duration-200">
+      <div className="relative">
+        <CardThumbnail
+          src={content.thumbnail_url}
+          alt={content.title}
+          onClick={handleView}
+          className="w-full h-52 bg-gradient-to-br from-indigo-100 to-purple-100 cursor-pointer overflow-hidden"
+          imageClassName="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+          fallback={
+            <div className="w-full h-full flex items-center justify-center text-green-700 font-semibold tracking-[0.2em] text-sm bg-green-50">
+              BOOK
+            </div>
+          }
+        />
+        <span className="absolute top-3 left-3 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-md">
           BOOK
         </span>
       </div>
 
-      {/* Content */}
       <div className="p-4">
-
-        {/* Title */}
         <h3
-          className="font-heading font-semibold text-slate-800 text-sm leading-snug mb-1 line-clamp-2 cursor-pointer hover:text-indigo-600 transition-colors"
+          className="font-heading font-semibold text-slate-800 text-sm leading-snug mb-2 line-clamp-2 cursor-pointer hover:text-indigo-600 transition-colors min-h-[2.75rem]"
           onClick={handleView}
         >
           {content.title}
         </h3>
 
-        {/* Source + Year */}
-        <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-          <span className="font-medium text-slate-500">{content.source_name}</span>
-          <span>{formatYear(content.published_date)}</span>
+        <div className="flex items-center justify-between text-xs text-slate-400 mb-2 gap-3">
+          <span className="font-medium text-slate-500 truncate">{content.source_name}</span>
+          <span className="shrink-0">{formatYear(content.published_date)}</span>
         </div>
 
-        {/* Description */}
-        <p className="text-xs text-slate-400 line-clamp-2 mb-3">
+        <p className="text-xs text-slate-400 line-clamp-3 mb-4 min-h-[3.75rem]">
           {content.description}
         </p>
 
-        {/* Actions */}
-        <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+        <div className="flex items-center justify-between pt-2 border-t border-slate-100 gap-3">
           <div className="flex items-center gap-3">
-
-            {/* ✅ Like with count */}
-            <button
-              onClick={handleLike}
-              className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-red-500 transition-colors"
-            >
-              {liked
-                ? <FaHeart className="text-red-500" size={13} />
-                : <FaRegHeart size={13} />
-              }
+            <button onClick={handleLike} className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-red-500 transition-colors">
+              {liked ? <FaHeart className="text-red-500" size={13} /> : <FaRegHeart size={13} />}
               <span>{likesCount}</span>
             </button>
 
-            {/* ✅ Save with count */}
-            <button
-              onClick={handleSave}
-              className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-indigo-500 transition-colors"
-            >
-              {saved
-                ? <FaBookmark className="text-indigo-500" size={13} />
-                : <FaRegBookmark size={13} />
-              }
+            <button onClick={handleSave} className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-indigo-500 transition-colors">
+              {saved ? <FaBookmark className="text-indigo-500" size={13} /> : <FaRegBookmark size={13} />}
               <span>{savesCount}</span>
             </button>
           </div>
 
-          <button
-            onClick={handleView}
-            className="text-xs text-indigo-500 font-medium hover:underline"
-          >
-            View Full →
+          <button onClick={handleView} className="text-xs text-indigo-500 font-medium hover:underline shrink-0">
+            View Full ?
           </button>
         </div>
-
       </div>
-    </div>
+    </article>
   )
 }
 
