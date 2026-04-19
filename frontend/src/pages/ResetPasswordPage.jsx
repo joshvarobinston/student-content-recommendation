@@ -60,6 +60,7 @@ const ResetPasswordPage = () => {
       const msg =
         error.response?.data?.error ||
         error.response?.data?.message ||
+        error.response?.data?.new_password?.[0] ||
         'Invalid or expired OTP. Please try again.'
       toast.error(msg)
     } finally {

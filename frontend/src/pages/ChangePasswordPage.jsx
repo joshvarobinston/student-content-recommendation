@@ -58,47 +58,47 @@ const ChangePasswordPage = () => {
     <MainLayout>
       <div className="max-w-lg mx-auto">
 
-        <h1 className="font-heading font-bold text-2xl text-slate-800 mb-6">Change Password</h1>
+        <h1 className="font-heading font-bold text-2xl text-white mb-6">Change Password</h1>
 
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+        <div className="bg-[#1e2535] rounded-2xl border border-white/10 p-6">
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
             {/* Old Password */}
             <div>
-              <label className="text-sm font-medium text-slate-600 mb-1.5 block">Current Password</label>
+              <label className="text-sm font-medium text-gray-400 mb-1.5 block">Current Password</label>
               <input
                 type="password"
                 name="old_password"
                 value={formData.old_password}
                 onChange={handleChange}
                 placeholder="Your current password"
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all"
+                className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all"
               />
             </div>
 
             {/* New Password */}
             <div>
-              <label className="text-sm font-medium text-slate-600 mb-1.5 block">New Password</label>
+              <label className="text-sm font-medium text-gray-400 mb-1.5 block">New Password</label>
               <input
                 type="password"
                 name="new_password"
                 value={formData.new_password}
                 onChange={handleChange}
                 placeholder="Min 8 characters"
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all"
+                className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all"
               />
             </div>
 
             {/* Confirm Password */}
             <div>
-              <label className="text-sm font-medium text-slate-600 mb-1.5 block">Confirm New Password</label>
+              <label className="text-sm font-medium text-gray-400 mb-1.5 block">Confirm New Password</label>
               <input
                 type="password"
                 name="confirm_password"
                 value={formData.confirm_password}
                 onChange={handleChange}
                 placeholder="Repeat new password"
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all"
+                className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all"
               />
             </div>
 
@@ -107,7 +107,7 @@ const ChangePasswordPage = () => {
               <button
                 type="button"
                 onClick={() => navigate('/profile')}
-                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors text-sm"
+                className="flex-1 py-2.5 bg-white/10 hover:bg-white/15 text-gray-300 font-semibold rounded-xl transition-colors text-sm"
               >
                 Cancel
               </button>

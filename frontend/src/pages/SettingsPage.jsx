@@ -32,8 +32,6 @@ const SettingsPage = () => {
   const handleSave = async () => {
     setSaving(true)
     try {
-      // ✅ FIXED: Only send fields that actually exist in the backend model
-      // Removed: email_notifications, weekly_digest, default_content_type (don't exist)
       await updateSettings({
         items_per_page: settings.items_per_page,
         show_thumbnails: settings.show_thumbnails,
@@ -62,26 +60,26 @@ const SettingsPage = () => {
 
         {/* Header */}
         <div className="mb-6">
-          <h1 className="font-heading font-bold text-2xl text-slate-800">Settings</h1>
-          <p className="text-slate-400 text-sm mt-1">Manage your account preferences</p>
+          <h1 className="font-heading font-bold text-2xl text-white">Settings</h1>
+          <p className="text-gray-400 text-sm mt-1">Manage your account preferences</p>
         </div>
 
         {/* Content Preferences */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 mb-5">
-          <h2 className="font-heading font-semibold text-slate-700 mb-5">
+        <div className="bg-[#1e2535] rounded-2xl border border-white/10 p-6 mb-5">
+          <h2 className="font-heading font-semibold text-gray-200 mb-5">
             Content Preferences
           </h2>
 
           {/* Items Per Page */}
-          <div className="flex items-center justify-between py-4 border-b border-slate-100">
+          <div className="flex items-center justify-between py-4 border-b border-white/10">
             <div>
-              <p className="font-medium text-slate-700 text-sm">Items Per Page</p>
-              <p className="text-slate-400 text-xs mt-0.5">Number of content items per page</p>
+              <p className="font-medium text-gray-200 text-sm">Items Per Page</p>
+              <p className="text-gray-500 text-xs mt-0.5">Number of content items per page</p>
             </div>
             <select
               value={settings?.items_per_page || 20}
               onChange={(e) => handleChange('items_per_page', parseInt(e.target.value))}
-              className="px-3 py-2 text-sm border border-slate-200 rounded-xl bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className="px-3 py-2 text-sm bg-white/5 border border-white/10 text-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400"
             >
               <option value={5}>5</option>
               <option value={10}>10</option>
@@ -91,15 +89,15 @@ const SettingsPage = () => {
           </div>
 
           {/* Default Content Type */}
-          <div className="flex items-center justify-between py-4 border-b border-slate-100">
+          <div className="flex items-center justify-between py-4 border-b border-white/10">
             <div>
-              <p className="font-medium text-slate-700 text-sm">Default Content Type</p>
-              <p className="text-slate-400 text-xs mt-0.5">Preferred content type filter</p>
+              <p className="font-medium text-gray-200 text-sm">Default Content Type</p>
+              <p className="text-gray-500 text-xs mt-0.5">Preferred content type filter</p>
             </div>
             <select
               value={settings?.preferred_content_type || 'all'}
               onChange={(e) => handleChange('preferred_content_type', e.target.value)}
-              className="px-3 py-2 text-sm border border-slate-200 rounded-xl bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className="px-3 py-2 text-sm bg-white/5 border border-white/10 text-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400"
             >
               <option value="all">All</option>
               <option value="video">Videos</option>
@@ -112,13 +110,13 @@ const SettingsPage = () => {
           {/* Show Thumbnails */}
           <div className="flex items-center justify-between py-4">
             <div>
-              <p className="font-medium text-slate-700 text-sm">Show Thumbnails</p>
-              <p className="text-slate-400 text-xs mt-0.5">Display thumbnails on content cards</p>
+              <p className="font-medium text-gray-200 text-sm">Show Thumbnails</p>
+              <p className="text-gray-500 text-xs mt-0.5">Display thumbnails on content cards</p>
             </div>
             <button
               onClick={() => handleChange('show_thumbnails', !settings?.show_thumbnails)}
               className={`w-12 h-6 rounded-full transition-colors relative ${
-                settings?.show_thumbnails ? 'bg-indigo-500' : 'bg-slate-200'
+                settings?.show_thumbnails ? 'bg-indigo-500' : 'bg-white/20'
               }`}
             >
               <span
@@ -131,19 +129,19 @@ const SettingsPage = () => {
         </div>
 
         {/* Privacy */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 mb-5">
-          <h2 className="font-heading font-semibold text-slate-700 mb-5">Privacy</h2>
+        <div className="bg-[#1e2535] rounded-2xl border border-white/10 p-6 mb-5">
+          <h2 className="font-heading font-semibold text-gray-200 mb-5">Privacy</h2>
 
           {/* Track Search History */}
-          <div className="flex items-center justify-between py-4 border-b border-slate-100">
+          <div className="flex items-center justify-between py-4 border-b border-white/10">
             <div>
-              <p className="font-medium text-slate-700 text-sm">Track Search History</p>
-              <p className="text-slate-400 text-xs mt-0.5">Used to improve your recommendations</p>
+              <p className="font-medium text-gray-200 text-sm">Track Search History</p>
+              <p className="text-gray-500 text-xs mt-0.5">Used to improve your recommendations</p>
             </div>
             <button
               onClick={() => handleChange('track_search_history', !settings?.track_search_history)}
               className={`w-12 h-6 rounded-full transition-colors relative ${
-                settings?.track_search_history ? 'bg-indigo-500' : 'bg-slate-200'
+                settings?.track_search_history ? 'bg-indigo-500' : 'bg-white/20'
               }`}
             >
               <span
@@ -157,13 +155,13 @@ const SettingsPage = () => {
           {/* Track View History */}
           <div className="flex items-center justify-between py-4">
             <div>
-              <p className="font-medium text-slate-700 text-sm">Track View History</p>
-              <p className="text-slate-400 text-xs mt-0.5">Used for popularity and ML scoring</p>
+              <p className="font-medium text-gray-200 text-sm">Track View History</p>
+              <p className="text-gray-500 text-xs mt-0.5">Used for popularity and ML scoring</p>
             </div>
             <button
               onClick={() => handleChange('track_view_history', !settings?.track_view_history)}
               className={`w-12 h-6 rounded-full transition-colors relative ${
-                settings?.track_view_history ? 'bg-indigo-500' : 'bg-slate-200'
+                settings?.track_view_history ? 'bg-indigo-500' : 'bg-white/20'
               }`}
             >
               <span
@@ -176,18 +174,18 @@ const SettingsPage = () => {
         </div>
 
         {/* Language */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 mb-6">
-          <h2 className="font-heading font-semibold text-slate-700 mb-5">Language</h2>
+        <div className="bg-[#1e2535] rounded-2xl border border-white/10 p-6 mb-6">
+          <h2 className="font-heading font-semibold text-gray-200 mb-5">Language</h2>
 
           <div className="flex items-center justify-between py-2">
             <div>
-              <p className="font-medium text-slate-700 text-sm">Content Language</p>
-              <p className="text-slate-400 text-xs mt-0.5">Language for recommended content</p>
+              <p className="font-medium text-gray-200 text-sm">Content Language</p>
+              <p className="text-gray-500 text-xs mt-0.5">Language for recommended content</p>
             </div>
             <select
               value={settings?.language || 'en'}
               onChange={(e) => handleChange('language', e.target.value)}
-              className="px-3 py-2 text-sm border border-slate-200 rounded-xl bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className="px-3 py-2 text-sm bg-white/5 border border-white/10 text-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400"
             >
               <option value="en">English</option>
               <option value="es">Spanish</option>

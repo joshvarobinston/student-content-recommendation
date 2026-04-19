@@ -1,7 +1,7 @@
 # student_Reco/engagement/admin.py
 
 from django.contrib import admin
-from .models import UserView, UserLike, UserSave, UserSearch
+from .models import UserView, UserLike, UserSave, UserSearch, UserActivity
 
 
 @admin.register(UserView)
@@ -30,3 +30,11 @@ class UserSearchAdmin(admin.ModelAdmin):
     list_display = ("user", "query", "searched_at")
     list_filter = ("searched_at",)
     search_fields = ("user__username", "query")
+
+
+@admin.register(UserActivity)
+class UserActivityAdmin(admin.ModelAdmin):
+    list_display = ("user", "activity_type", "description", "ip_address", "created_at")
+    list_filter = ("activity_type", "created_at")
+    search_fields = ("user__username", "description")
+    readonly_fields = ("created_at",)

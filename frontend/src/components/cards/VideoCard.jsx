@@ -43,7 +43,7 @@ const VideoCard = ({ content }) => {
   }
 
   return (
-    <article className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-1 transition-all duration-200">
+    <article className="bg-[#1e2535] rounded-2xl overflow-hidden border border-white/5 hover:border-indigo-500/40 hover:-translate-y-1 transition-all duration-200">
       <div className="relative">
         <CardThumbnail
           src={content.thumbnail_url}
@@ -52,7 +52,7 @@ const VideoCard = ({ content }) => {
           className="w-full h-44 bg-slate-100 cursor-pointer overflow-hidden"
           imageClassName="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
           fallback={
-            <div className="w-full h-full flex items-center justify-center bg-indigo-50 text-indigo-600 font-semibold tracking-[0.2em] text-sm">
+            <div className="w-full h-full flex items-center justify-center bg-indigo-900/40 text-indigo-400 font-semibold tracking-[0.2em] text-sm">
               VIDEO
             </div>
           }
@@ -64,21 +64,21 @@ const VideoCard = ({ content }) => {
 
       <div className="p-4">
         <h3
-          className="font-heading font-semibold text-slate-800 text-sm leading-snug mb-2 line-clamp-2 cursor-pointer hover:text-indigo-600 transition-colors min-h-[2.75rem]"
+          className="font-heading font-semibold text-white text-sm leading-snug mb-2 line-clamp-2 cursor-pointer hover:text-indigo-400 transition-colors min-h-[2.75rem]"
           onClick={handleView}
         >
           {content.title}
         </h3>
 
         <div className="flex items-center justify-between text-xs text-slate-400 mb-3 gap-3">
-          <span className="font-medium text-slate-500 truncate">{content.source_name}</span>
-          <span className="shrink-0">{formatDate(content.published_date)}</span>
+          <span className="font-medium text-gray-400 truncate">{content.source_name}</span>
+          <span className="shrink-0 text-gray-500">{formatDate(content.published_date)}</span>
         </div>
 
         <div className="flex items-center gap-3 pt-2 border-t border-slate-100">
           <button
             onClick={handleLike}
-            className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-red-500 transition-colors"
+            className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-red-400 transition-colors"
           >
             {liked ? <FaHeart className="text-red-500" size={14} /> : <FaRegHeart size={14} />}
             <span>{likesCount}</span>
@@ -86,7 +86,7 @@ const VideoCard = ({ content }) => {
 
           <button
             onClick={handleSave}
-            className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-indigo-500 transition-colors"
+            className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-indigo-400 transition-colors"
           >
             {saved ? <FaBookmark className="text-indigo-500" size={14} /> : <FaRegBookmark size={14} />}
             <span>{savesCount}</span>

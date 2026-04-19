@@ -12,7 +12,7 @@ import Loader from '../components/common/Loader'
 import EmptyState from '../components/common/EmptyState'
 
 const FolderDetailPage = () => {
-  const { id } = useParams()   // ✅ Fixed — route is /library/:id
+  const { id } = useParams()
   const navigate = useNavigate()
 
   const [items, setItems] = useState([])
@@ -70,17 +70,17 @@ const FolderDetailPage = () => {
         <div className="flex items-center gap-3 mb-2">
           <button
             onClick={() => navigate('/library')}
-            className="text-slate-400 hover:text-slate-600 transition-colors text-sm"
+            className="text-gray-400 hover:text-gray-200 transition-colors text-sm"
           >
             ← Library
           </button>
-          <span className="text-slate-300">/</span>
-          <h1 className="font-heading font-bold text-2xl text-slate-800">
+          <span className="text-white/30">/</span>
+          <h1 className="font-heading font-bold text-2xl text-white">
             📁 {folderName}
           </h1>
         </div>
         {folderDescription && (
-          <p className="text-slate-400 text-sm mb-6 ml-1">{folderDescription}</p>
+          <p className="text-gray-500 text-sm mb-6 ml-1">{folderDescription}</p>
         )}
 
         {/* Items */}
@@ -97,11 +97,10 @@ const FolderDetailPage = () => {
             {items.map((item) => (
               <div key={item.id} className="relative">
                 {renderCard(item)}
-                {/* ✅ Remove button */}
                 <button
                   onClick={() => handleRemove(item.id)}
                   disabled={removingId === item.id}
-                  className="absolute top-2 right-2 px-3 py-1 bg-red-50 hover:bg-red-100 text-red-500 text-xs font-medium rounded-lg transition-colors disabled:opacity-50 border border-red-100"
+                  className="absolute top-2 right-2 px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-medium rounded-lg transition-colors disabled:opacity-50 border border-red-500/20"
                 >
                   {removingId === item.id ? 'Removing...' : 'Remove'}
                 </button>

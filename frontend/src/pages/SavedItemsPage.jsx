@@ -57,8 +57,8 @@ const SavedItemsPage = () => {
 
         {/* Header */}
         <div className="mb-6">
-          <h1 className="font-heading font-bold text-2xl text-slate-800">🔖 Saved Items</h1>
-          <p className="text-slate-400 text-sm mt-1">
+          <h1 className="font-heading font-bold text-2xl text-white">🔖 Saved Items</h1>
+          <p className="text-gray-400 text-sm mt-1">
             {!loading && `${items.length} saved item${items.length !== 1 ? 's' : ''}`}
           </p>
         </div>
@@ -72,7 +72,7 @@ const SavedItemsPage = () => {
               className={`px-4 py-2 text-sm font-medium rounded-xl transition-all ${
                 activeType === tab.value
                   ? 'bg-indigo-500 text-white'
-                  : 'bg-white border border-slate-200 text-slate-500 hover:border-indigo-300'
+                  : 'bg-white/5 border border-white/10 text-gray-400 hover:border-indigo-400/50 hover:text-gray-200'
               }`}
             >
               {tab.label}

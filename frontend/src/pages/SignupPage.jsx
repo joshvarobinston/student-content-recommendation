@@ -45,24 +45,8 @@ const SignupPage = () => {
         password: formData.password,
       })
 
-      const loginRes = await login({
-        email: formData.email,
-        password: formData.password,
-      })
-
-      if (loginRes.data.requires_otp) {
-        savePendingOtp({
-          email: formData.email,
-          purpose: loginRes.data.purpose,
-        })
-        toast.success('Account created. Verify the OTP sent to your email.')
-        navigate('/verify-otp')
-        return
-      }
-
-      saveTokens(loginRes.data.access, loginRes.data.refresh)
-      toast.success('Account created! Please select your interests.')
-      navigate('/interests')
+      toast.success('Account created successfully! Please log in.')
+      navigate('/login')
     } catch (error) {
       const msg =
         error.response?.data?.error ||

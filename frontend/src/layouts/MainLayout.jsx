@@ -6,7 +6,7 @@ import Sidebar from './Sidebar'
 
 const MainLayout = ({ children }) => {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen" style={{ background: '#0f1623' }}>
 
       {/* Top Navbar */}
       <Navbar />

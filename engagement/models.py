@@ -65,6 +65,40 @@ class UserSearch(models.Model):
 
     def __str__(self):
         return f"{self.user.username} searched '{self.query}'"
+
+
+class UserActivity(models.Model):
+    """
+    Tracks user activities like login, signup, etc.
+    Used for analytics and user engagement tracking
+    """
+    ACTIVITY_TYPES = (
+        ('signup', 'User Signup'),
+        ('login', 'User Login'),
+        ('otp_verification', 'OTP Verification'),
+        ('password_reset', 'Password Reset'),
+        ('profile_update', 'Profile Update'),
+    )
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    activity_type = models.CharField(
+        max_length=20,
+        choices=ACTIVITY_TYPES
+    )
+    description = models.TextField(blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'activity_type']),
+            models.Index(fields=['created_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.activity_type} at {self.created_at}"
     
 
     

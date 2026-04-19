@@ -78,8 +78,8 @@ const LibraryPage = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="font-heading font-bold text-2xl text-slate-800">My Library</h1>
-            <p className="text-slate-400 text-sm mt-1">Organize your saved content into folders</p>
+            <h1 className="font-heading font-bold text-2xl text-white">My Library</h1>
+            <p className="text-gray-400 text-sm mt-1">Organize your saved content into folders</p>
           </div>
           <button
             onClick={() => setModalOpen(true)}
@@ -92,29 +92,29 @@ const LibraryPage = () => {
         {/* Quick Links */}
         <div className="grid grid-cols-2 gap-4 mb-8">
           <button
-            onClick={() => navigate('/saved')}   // ✅ Fixed
-            className="bg-white border border-slate-100 rounded-2xl p-4 flex items-center gap-3 hover:border-indigo-200 hover:shadow-sm transition-all text-left"
+            onClick={() => navigate('/saved')}
+            className="bg-[#1e2535] border border-white/10 rounded-2xl p-4 flex items-center gap-3 hover:border-indigo-500/40 hover:bg-[#232d40] transition-all text-left"
           >
             <span className="text-2xl">🔖</span>
             <div>
-              <p className="font-semibold text-slate-800 text-sm">Saved Items</p>
-              <p className="text-slate-400 text-xs">All your bookmarked content</p>
+              <p className="font-semibold text-white text-sm">Saved Items</p>
+              <p className="text-gray-500 text-xs">All your bookmarked content</p>
             </div>
           </button>
           <button
-            onClick={() => navigate('/liked')}   // ✅ Fixed
-            className="bg-white border border-slate-100 rounded-2xl p-4 flex items-center gap-3 hover:border-indigo-200 hover:shadow-sm transition-all text-left"
+            onClick={() => navigate('/liked')}
+            className="bg-[#1e2535] border border-white/10 rounded-2xl p-4 flex items-center gap-3 hover:border-indigo-500/40 hover:bg-[#232d40] transition-all text-left"
           >
             <span className="text-2xl">❤️</span>
             <div>
-              <p className="font-semibold text-slate-800 text-sm">Liked Items</p>
-              <p className="text-slate-400 text-xs">All your liked content</p>
+              <p className="font-semibold text-white text-sm">Liked Items</p>
+              <p className="text-gray-500 text-xs">All your liked content</p>
             </div>
           </button>
         </div>
 
         {/* Folders */}
-        <h2 className="font-heading font-semibold text-lg text-slate-700 mb-4">Study Folders</h2>
+        <h2 className="font-heading font-semibold text-lg text-gray-300 mb-4">Study Folders</h2>
 
         {loading ? (
           <Loader />
@@ -125,33 +125,33 @@ const LibraryPage = () => {
             {folders.map((folder) => (
               <div
                 key={folder.id}
-                className="bg-white border border-slate-100 rounded-2xl p-5 hover:shadow-md hover:border-indigo-100 transition-all"
+                className="bg-[#1e2535] border border-white/10 rounded-2xl p-5 hover:border-indigo-500/40 hover:bg-[#232d40] transition-all"
               >
                 <div
                   className="cursor-pointer"
                   onClick={() => navigate(`/library/${folder.id}`)}
                 >
                   <div className="text-3xl mb-3">📁</div>
-                  <h3 className="font-heading font-semibold text-slate-800 mb-1 line-clamp-1">
+                  <h3 className="font-heading font-semibold text-white mb-1 line-clamp-1">
                     {folder.name}
                   </h3>
                   {folder.description && (
-                    <p className="text-slate-400 text-xs line-clamp-2 mb-3">
+                    <p className="text-gray-500 text-xs line-clamp-2 mb-3">
                       {folder.description}
                     </p>
                   )}
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-gray-600">
                     {new Date(folder.created_at).toLocaleDateString('en-US', {
                       year: 'numeric', month: 'short', day: 'numeric'
                     })}
                   </p>
                 </div>
 
-                <div className="flex justify-end mt-4 pt-3 border-t border-slate-100">
+                <div className="flex justify-end mt-4 pt-3 border-t border-white/10">
                   <button
                     onClick={() => handleDelete(folder.id)}
                     disabled={deletingId === folder.id}
-                    className="text-xs text-red-400 hover:text-red-600 font-medium transition-colors disabled:opacity-50"
+                    className="text-xs text-red-400 hover:text-red-300 font-medium transition-colors disabled:opacity-50"
                   >
                     {deletingId === folder.id ? 'Deleting...' : 'Delete'}
                   </button>
@@ -167,31 +167,31 @@ const LibraryPage = () => {
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Create New Folder">
         <div className="flex flex-col gap-4">
           <div>
-            <label className="text-sm font-medium text-slate-600 mb-1.5 block">Folder Name</label>
+            <label className="text-sm font-medium text-gray-400 mb-1.5 block">Folder Name</label>
             <input
               type="text"
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
               placeholder="e.g. Machine Learning Notes"
-              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all"
+              className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all"
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-slate-600 mb-1.5 block">
-              Description <span className="text-slate-400">(optional)</span>
+            <label className="text-sm font-medium text-gray-400 mb-1.5 block">
+              Description <span className="text-gray-600">(optional)</span>
             </label>
             <input
               type="text"
               value={newFolderDesc}
               onChange={(e) => setNewFolderDesc(e.target.value)}
               placeholder="What is this folder about?"
-              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all"
+              className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all"
             />
           </div>
           <div className="flex gap-3 pt-2">
             <button
               onClick={() => setModalOpen(false)}
-              className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition-colors"
+              className="flex-1 py-2.5 bg-white/10 hover:bg-white/15 text-gray-300 font-semibold rounded-xl text-sm transition-colors"
             >
               Cancel
             </button>

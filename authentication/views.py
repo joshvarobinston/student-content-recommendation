@@ -4,9 +4,8 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage, get_connection
 from django.utils import timezone
-
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -15,6 +14,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from accounts.models import UserProfile
 from django.conf import settings
 from settings_app.models import UserSettings
+from engagement.models import UserActivity
 
 from .models import OTPVerification
 from .serializers import (
@@ -38,13 +38,14 @@ class SignupAPIView(APIView):
         first_name = serializer.validated_data["first_name"]
         last_name = serializer.validated_data["last_name"]
 
-        if User.objects.filter(username=email).exists():
-            return Response({"error": "User already exists"}, status=status.HTTP_400_BAD_REQUEST)
+        # Check if email already exists (either as username or email field)
+        if User.objects.filter(username=email).exists() or User.objects.filter(email=email).exists():
+            return Response({"error": "Email already registered"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             validate_password(password)
         except Exception as exc:
-            return Response({"password": list(exc.messages)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": " ".join(exc.messages)}, status=status.HTTP_400_BAD_REQUEST)
 
         with transaction.atomic():
             user = User.objects.create_user(
@@ -57,6 +58,18 @@ class SignupAPIView(APIView):
             UserProfile.objects.create(user=user)
             UserSettings.objects.create(user=user)
 
+        # Add user activity for signup (outside transaction to avoid issues)
+        try:
+            UserActivity.objects.create(
+                user=user,
+                activity_type='signup',
+                description='User account created',
+                ip_address=get_client_ip(request),
+            )
+        except Exception as e:
+            # Log the error but don't fail the signup
+            print(f"Failed to create user activity: {e}")
+
         return Response({"message": "User created successfully"}, status=status.HTTP_201_CREATED)
 
 
@@ -68,6 +81,19 @@ def _generate_otp_code():
 def _get_profile(user):
     profile, _ = UserProfile.objects.get_or_create(user=user)
     return profile
+
+
+def get_client_ip(request):
+    """Get the client IP address from the request"""
+    try:
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+    except:
+        return None
 
 
 def _issue_otp(user, purpose):
@@ -94,13 +120,30 @@ def _issue_otp(user, purpose):
         OTPVerification.PURPOSE_PASSWORD_RESET: f"Your Student Reco password reset OTP is {otp.code}. It expires in 10 minutes.",
     }
 
-    send_mail(
-        subject_map[purpose],
-        body_map[purpose],
-        settings.DEFAULT_FROM_EMAIL,
-        [user.email],
-        fail_silently=False,
+    subject = subject_map[purpose]
+    body = body_map[purpose]
+    from_email = settings.DEFAULT_FROM_EMAIL
+    recipient_list = [user.email]
+
+    # Send to console (for development/debugging)
+    console_email = EmailMessage(
+        subject=subject,
+        body=body,
+        from_email=from_email,
+        to=recipient_list,
+        connection=get_connection('django.core.mail.backends.console.EmailBackend', fail_silently=True)
     )
+    console_email.send(fail_silently=True)
+
+    # Send to actual email (SMTP)
+    smtp_email = EmailMessage(
+        subject=subject,
+        body=body,
+        from_email=from_email,
+        to=recipient_list,
+        connection=get_connection('django.core.mail.backends.smtp.EmailBackend', fail_silently=True)
+    )
+    smtp_email.send(fail_silently=True)
 
     return otp
 
@@ -181,11 +224,27 @@ class VerifyOTPAPIView(APIView):
         otp_record.is_used = True
         otp_record.save(update_fields=["is_used"])
 
+        # Add user activity when OTP is verified
+        UserActivity.objects.create(
+            user=user,
+            activity_type='otp_verification',
+            description=f'OTP verified for {purpose}',
+            ip_address=get_client_ip(request),
+        )
+
         if purpose == OTPVerification.PURPOSE_SIGNIN:
             profile = _get_profile(user)
             if not profile.is_email_verified:
                 profile.is_email_verified = True
                 profile.save(update_fields=["is_email_verified"])
+
+            # Add user activity for login
+            UserActivity.objects.create(
+                user=user,
+                activity_type='login',
+                description='User logged in successfully',
+                ip_address=get_client_ip(request),
+            )
 
             refresh = RefreshToken.for_user(user)
             return Response(
@@ -242,10 +301,19 @@ class ResetPasswordAPIView(APIView):
         try:
             validate_password(new_password, user=user)
         except Exception as exc:
-            return Response({"new_password": list(exc.messages)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": " ".join(exc.messages)}, status=status.HTTP_400_BAD_REQUEST)
 
         otp_record.is_used = True
         otp_record.save(update_fields=["is_used"])
         user.set_password(new_password)
         user.save()
+        
+        # Add user activity for password reset
+        UserActivity.objects.create(
+            user=user,
+            activity_type='password_reset',
+            description='Password reset successfully',
+            ip_address=get_client_ip(request),
+        )
+        
         return Response({"message": "Password reset successful"}, status=status.HTTP_200_OK)
