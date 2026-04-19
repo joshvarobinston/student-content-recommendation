@@ -49,9 +49,9 @@ class ContentItem(models.Model):
 
     # Source & metadata
     source_name = models.CharField(max_length=100)
-    source_url = models.URLField(unique=True)
+    source_url = models.URLField(max_length=1000, unique=True)
 
-    thumbnail_url = models.URLField(blank=True)
+    thumbnail_url = models.URLField(max_length=1000, blank=True)
     author = models.CharField(max_length=255, blank=True)
 
     # Recency & video-specific info

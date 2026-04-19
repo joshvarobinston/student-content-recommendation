@@ -136,3 +136,42 @@ def ingest_external_books(books, interest_domain_name, language='en'):
         invalidate_tfidf_cache()
 
     return saved_items
+
+
+def ingest_external_articles(articles, interest_domain_name, language='en'):
+    """
+    Stores Dev.to (or generic) articles into ContentItem table.
+    Avoids duplicates using source_url.
+    """
+    interest_domain = _get_or_create_domain(interest_domain_name)
+    saved_items = []
+
+    for article in articles:
+        source_url = article.get("source_url", "")
+        if not source_url:
+            continue
+
+        if ContentItem.objects.filter(source_url=source_url).exists():
+            continue
+
+        published = parse_datetime(article.get("published_date", ""))
+        if not published:
+            published = now()
+
+        item = ContentItem.objects.create(
+            title=article.get("title", ""),
+            description=article.get("description", ""),
+            content_type="article",
+            source_name=article.get("source_name", ""),
+            source_url=source_url,
+            thumbnail_url=article.get("thumbnail_url", ""),
+            published_date=published,
+            interest_domain=interest_domain,
+            language=language,  # ✅ Save language
+        )
+        saved_items.append(item)
+
+    if saved_items:
+        invalidate_tfidf_cache()
+
+    return saved_items

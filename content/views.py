@@ -20,9 +20,12 @@ from .services.external.ingestion import (
     ingest_external_books,
     ingest_external_news,
     ingest_external_videos,
+    ingest_external_articles,
 )
 from .services.external.news_fetch import fetch_news_articles
 from .services.external.youtube_fetch import fetch_youtube_videos
+from .services.external.article_fetch import fetch_dev_to_articles
+from .services.external.arxiv_fetch import fetch_arxiv_papers
 from .services.recommendation import generate_recommendations_for_user
 from .services.tfidf import invalidate_tfidf_cache
 
@@ -103,6 +106,22 @@ def _fetch_and_ingest_for_user(user, language="en"):
         except Exception as exc:
             print(f"Books fetch error for {domain_name}:", exc)
 
+        try:
+            articles = fetch_dev_to_articles(domain_name, max_results=3)
+            saved_articles = ingest_external_articles(articles, domain_name, language=language)
+            for item in saved_articles:
+                _apply_content_tags(item, item.title, item.description, domain_name, item.source_name)
+        except Exception as exc:
+            print(f"Dev.to fetch error for {domain_name}:", exc)
+
+        try:
+            papers = fetch_arxiv_papers(domain_name, max_results=2)
+            saved_papers = ingest_external_books(papers, domain_name, language=language)
+            for item in saved_papers:
+                _apply_content_tags(item, item.title, item.description, domain_name, item.source_name)
+        except Exception as exc:
+            print(f"ArXiv fetch error for {domain_name}:", exc)
+
 
 class RecommendationAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -122,7 +141,7 @@ class RecommendationAPIView(APIView):
 
         if refresh:
             invalidate_tfidf_cache()
-        _fetch_and_ingest_for_user(user, language=preferred_language)
+            _fetch_and_ingest_for_user(user, language=preferred_language)
 
         ranked_items = generate_recommendations_for_user(user, content_type=content_type)
         contents = [item["content"] for item in ranked_items]

@@ -43,7 +43,7 @@ const BookCard = ({ content }) => {
   }
 
   return (
-    <article className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-1 transition-all duration-200">
+    <article className="bg-[#1e2535] rounded-2xl overflow-hidden border border-white/5 hover:border-indigo-500/40 hover:-translate-y-1 transition-all duration-200">
       <div className="relative">
         <CardThumbnail
           src={content.thumbnail_url}
@@ -64,36 +64,36 @@ const BookCard = ({ content }) => {
 
       <div className="p-4">
         <h3
-          className="font-heading font-semibold text-slate-800 text-sm leading-snug mb-2 line-clamp-2 cursor-pointer hover:text-indigo-600 transition-colors min-h-[2.75rem]"
+          className="font-heading font-semibold text-white text-sm leading-snug mb-2 line-clamp-2 cursor-pointer hover:text-indigo-400 transition-colors min-h-[2.75rem]"
           onClick={handleView}
         >
           {content.title}
         </h3>
 
-        <div className="flex items-center justify-between text-xs text-slate-400 mb-2 gap-3">
-          <span className="font-medium text-slate-500 truncate">{content.source_name}</span>
+        <div className="flex items-center justify-between text-xs text-gray-400 mb-2 gap-3">
+          <span className="font-medium text-gray-500 truncate">{content.source_name}</span>
           <span className="shrink-0">{formatYear(content.published_date)}</span>
         </div>
 
-        <p className="text-xs text-slate-400 line-clamp-3 mb-4 min-h-[3.75rem]">
+        <p className="text-xs text-gray-400 line-clamp-3 mb-4 min-h-[3.75rem]">
           {content.description}
         </p>
 
-        <div className="flex items-center justify-between pt-2 border-t border-slate-100 gap-3">
+        <div className="flex items-center justify-between pt-2 border-t border-white/5 gap-3">
           <div className="flex items-center gap-3">
-            <button onClick={handleLike} className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-red-500 transition-colors">
+            <button onClick={handleLike} className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-red-400 transition-colors">
               {liked ? <FaHeart className="text-red-500" size={13} /> : <FaRegHeart size={13} />}
               <span>{likesCount}</span>
             </button>
 
-            <button onClick={handleSave} className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-indigo-500 transition-colors">
+            <button onClick={handleSave} className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-indigo-400 transition-colors">
               {saved ? <FaBookmark className="text-indigo-500" size={13} /> : <FaRegBookmark size={13} />}
               <span>{savesCount}</span>
             </button>
           </div>
 
-          <button onClick={handleView} className="text-xs text-indigo-500 font-medium hover:underline shrink-0">
-            View Full ?
+          <button onClick={handleView} className="text-xs text-indigo-400 font-medium hover:text-indigo-300 shrink-0">
+            View Full ↗
           </button>
         </div>
       </div>
